@@ -49,13 +49,51 @@ apiRouter.use('/transactions', transactionsRoutes);
 app.use('/api', apiRouter);
 
 // ================= FRONTEND STATIC =================
-// path ديال build ديال frontend (Vite)
+// Frontend static files serving with error handling
 const frontendPath = path.join(__dirname, '..', 'frontend', 'dist');
+
+// Serve static files if they exist
 app.use(express.static(frontendPath));
 
-// أي route ماشي API → frontend
-app.get('*', (_req, res) => {
-    res.sendFile(path.join(frontendPath, 'index.html'));
+// Catch-all route for frontend with fallback
+app.get('*', (req, res) => {
+    // Skip API routes
+    if (req.path.startsWith('/api')) {
+        return res.status(404).json({
+            success: false,
+            error: 'API endpoint not found',
+            message: `Route ${req.path} not found`
+        });
+    }
+
+    // Try to serve frontend index.html
+    const indexPath = path.join(frontendPath, 'index.html');
+    
+    // Check if frontend build exists
+    try {
+        if (require('fs').existsSync(indexPath)) {
+            res.sendFile(indexPath);
+        } else {
+            // Frontend not built - serve API-only response
+            res.json({
+                success: true,
+                message: 'ArwaEduc API Server is running',
+                version: '1.0.0',
+                endpoints: {
+                    health: '/health',
+                    api: '/api',
+                    auth: '/api/auth/login'
+                },
+                note: 'Frontend not available - API only mode'
+            });
+        }
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: 'Server configuration error',
+            message: 'Unable to serve frontend files'
+        });
+    }
 });
 
 // ================= ERROR HANDLING =================
