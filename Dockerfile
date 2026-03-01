@@ -18,7 +18,7 @@ COPY package*.json ./
 ENV PRISMA_CLI_BINARY_TARGETS="debian-openssl-1.1.x"
 ENV NODE_ENV=production
 
-# Install all dependencies (including dev dependencies for TypeScript)
+# Install all dependencies first (including dev dependencies needed for build)
 RUN npm ci
 
 # Copy the rest of the application code
@@ -27,25 +27,21 @@ COPY . .
 # Generate Prisma Client
 RUN npx prisma generate
 
-# Build the TypeScript application
-RUN npm run build:backend || (echo "TypeScript build failed, trying alternative..." && npx tsc --skipLibCheck || echo "Continuing without build...")
+# Build the TypeScript application BEFORE removing dev dependencies
+RUN npm run build:backend
 
-# Remove development dependencies and clean cache to reduce image size
+# Now safely remove development dependencies to reduce image size
 RUN npm prune --production && npm cache clean --force
 
 # Remove frontend node_modules to save space (not needed for backend-only)
 RUN rm -rf /app/frontend/node_modules || true
 
-# Back to app root
-WORKDIR /app
+# Remove source TypeScript files to save space
+RUN rm -rf /app/src /app/tsconfig.json || true
 
 # Expose the port the app runs on
 EXPOSE 3000
 
-# Create non-root user for security
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nextjs -u 1001
-USER nextjs
-
-# Define the command to run the application
+# Run as root for now to avoid user creation issues
+# Can add non-root user later if needed for security
 CMD ["npm", "start"]
