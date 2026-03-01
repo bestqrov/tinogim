@@ -4,7 +4,7 @@
   "description": "ArwaEduc School Management System Backend with Node.js, Express, Prisma, and MongoDB",
   "main": "dist/server.js",
   "engines": {
-    "node": ">=20.0.0",
+    "node": ">=18.0.0",
     "npm": ">=9.0.0"
   },
   "scripts": {
