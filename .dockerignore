@@ -4,6 +4,8 @@ npm-debug.log
 .env.local
 .env.development
 .env.test
+.env.production
+.env.example
 dist
 build
 .git
@@ -22,3 +24,15 @@ coverage
 .DS_Store
 *.log
 logs
+.nvmrc
+debug_output*.txt
+debug*.json
+test-*.js
+test-*.ts
+check-*.js
+check-*.ts
+create-*.ts
+reset-*.ts
+verify-*.ts
+update-*.js
+*.ps1
