@@ -74,7 +74,15 @@ app.get('*', (req, res) => {
         if (require('fs').existsSync(indexPath)) {
             return res.sendFile(indexPath);
         } else {
-            // Frontend not built - serve API-only response
+            // Frontend not built - redirect to main domain or show API info
+            const frontendUrl = process.env.FRONTEND_URL || process.env.APP_URL;
+            
+            // If accessing root and frontend URL is configured, redirect
+            if (req.path === '/' && frontendUrl && frontendUrl !== req.get('host')) {
+                return res.redirect(302, frontendUrl);
+            }
+            
+            // Otherwise serve API-only response
             return res.json({
                 success: true,
                 message: 'ArwaEduc API Server is running',
@@ -84,6 +92,7 @@ app.get('*', (req, res) => {
                     api: '/api',
                     auth: '/api/auth/login'
                 },
+                redirect: frontendUrl || null,
                 note: 'Frontend not available - API only mode'
             });
         }

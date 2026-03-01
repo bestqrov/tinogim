@@ -12,7 +12,8 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-7d}
       - BCRYPT_ROUNDS=${BCRYPT_ROUNDS:-12}
-      - FRONTEND_URL=${FRONTEND_URL:-}
+      - FRONTEND_URL=${FRONTEND_URL:-https://arwaeduc.enovazoneacadimeca.com}
+      - APP_URL=${APP_URL:-https://arwaeduc.enovazoneacadimeca.com}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]

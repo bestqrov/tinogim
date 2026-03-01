@@ -4,6 +4,10 @@
 # Service type: dockerCompose for multi-service or docker for single service
 type: docker
 
+# Domain configuration
+domains:
+  - arwaeduc.enovazoneacadimeca.com
+
 # Health check endpoint
 healthcheck: /health
 
@@ -36,3 +40,5 @@ requiredEnvVars:
   - JWT_SECRET
   - NODE_ENV
   - PORT
+  - FRONTEND_URL
+  - APP_URL
