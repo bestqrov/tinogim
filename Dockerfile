@@ -27,12 +27,14 @@ WORKDIR /app
 # Generate Prisma Client
 RUN npx prisma generate
 
-# Build the TypeScript application
-RUN npm run build:backend
+# Build the TypeScript application (backend only for now)
+RUN npm run build:backend || npm run build
 
 # Remove development dependencies and clean cache
 RUN npm prune --production && npm cache clean --force
-WORKDIR /app/frontend && npm prune --production && npm cache clean --force
+
+# Remove frontend node_modules to save space (not needed for backend-only)
+RUN rm -rf /app/frontend/node_modules || true
 
 # Back to app root
 WORKDIR /app
