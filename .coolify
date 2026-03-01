@@ -1,8 +1,9 @@
 # Coolify deployment configuration
 # This file tells Coolify how to deploy the ArwaEduc application
 
-# Service type: dockerCompose for multi-service or docker for single service
+# Service type - force Docker instead of nixpacks
 type: docker
+buildpack: dockerfile
 
 # Domain configuration
 domains:
@@ -14,8 +15,13 @@ healthcheck: /health
 # Port the application runs on
 port: 3000
 
-# Build command (Coolify will use Dockerfile by default)
-buildCommand: docker build .
+# Build configuration - force Dockerfile usage
+buildCommand: docker build -t app .
+buildPack: dockerfile
+nixpacks: false
+
+# Startup command (defined in Dockerfile CMD)
+startCommand: npm start
 
 # Startup command (defined in Dockerfile CMD)
 startCommand: npm start

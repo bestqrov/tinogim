@@ -8,21 +8,10 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm ci --only=production
 
 # Copy the rest of the application code
 COPY . .
-
-# Install frontend dependencies 
-WORKDIR /app/frontend
-COPY frontend/package*.json ./
-RUN npm ci
-
-# Build the frontend
-RUN npm run build
-
-# Go back to app root
-WORKDIR /app
 
 # Generate Prisma Client
 RUN npx prisma generate

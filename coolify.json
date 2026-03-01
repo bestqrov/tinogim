@@ -1,0 +1,21 @@
+{
+  "buildCommand": "docker build -t app .",
+  "startCommand": "docker run -p 3000:3000 app",
+  "buildpack": "dockerfile",
+  "nixpacks": false,
+  "type": "docker",
+  "port": 3000,
+  "environmentVariables": {
+    "NODE_ENV": "production",
+    "PORT": "3000",
+    "NIXPACKS_NO_DEFAULT": "true",
+    "COOLIFY_BUILD_PACK": "dockerfile"
+  },
+  "healthCheck": {
+    "path": "/health",
+    "port": 3000,
+    "interval": 30,
+    "timeout": 10,
+    "retries": 3
+  }
+}

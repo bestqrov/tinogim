@@ -1,0 +1,26 @@
+# Disable nixpacks - use Dockerfile instead
+# This file tells Coolify to skip nixpacks detection
+
+# Node.js files that would trigger nixpacks
+package.json
+package-lock.json
+
+# Frontend files
+frontend/
+frontend/package.json
+frontend/package-lock.json
+
+# All JS/TS files
+*.js
+*.ts
+*.tsx
+*.jsx
+
+# Configuration files that trigger nixpacks
+tsconfig.json
+next.config.js
+vite.config.js
+webpack.config.js
+
+# Dependencies
+node_modules/
