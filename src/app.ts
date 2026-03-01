@@ -72,10 +72,10 @@ app.get('*', (req, res) => {
     // Check if frontend build exists
     try {
         if (require('fs').existsSync(indexPath)) {
-            res.sendFile(indexPath);
+            return res.sendFile(indexPath);
         } else {
             // Frontend not built - serve API-only response
-            res.json({
+            return res.json({
                 success: true,
                 message: 'ArwaEduc API Server is running',
                 version: '1.0.0',
@@ -88,7 +88,7 @@ app.get('*', (req, res) => {
             });
         }
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             error: 'Server configuration error',
             message: 'Unable to serve frontend files'
