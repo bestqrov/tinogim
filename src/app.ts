@@ -49,10 +49,12 @@ apiRouter.use('/transactions', transactionsRoutes);
 app.use('/api', apiRouter);
 
 // ================= FRONTEND STATIC =================
+// Serve static files from public directory
+const publicPath = path.join(__dirname, '..', 'public');
+app.use(express.static(publicPath));
+
 // Frontend static files serving with error handling
 const frontendPath = path.join(__dirname, '..', 'frontend', 'dist');
-
-// Serve static files if they exist
 app.use(express.static(frontendPath));
 
 // Catch-all route for frontend with fallback
@@ -66,35 +68,35 @@ app.get('*', (req, res) => {
         });
     }
 
-    // Try to serve frontend index.html
-    const indexPath = path.join(frontendPath, 'index.html');
+    // Try to serve frontend index.html first
+    const frontendIndex = path.join(frontendPath, 'index.html');
     
     // Check if frontend build exists
     try {
-        if (require('fs').existsSync(indexPath)) {
-            return res.sendFile(indexPath);
+        if (require('fs').existsSync(frontendIndex)) {
+            return res.sendFile(frontendIndex);
         } else {
-            // Frontend not built - redirect to main domain or show API info
-            const frontendUrl = process.env.FRONTEND_URL || process.env.APP_URL;
-            
-            // If accessing root and frontend URL is configured, redirect
-            if (req.path === '/' && frontendUrl && frontendUrl !== req.get('host')) {
-                return res.redirect(302, frontendUrl);
+            // Fallback to simple login page
+            const publicIndex = path.join(publicPath, 'index.html');
+            if (require('fs').existsSync(publicIndex)) {
+                return res.sendFile(publicIndex);
+            } else {
+                // Last fallback - API-only response
+                const frontendUrl = process.env.FRONTEND_URL || process.env.APP_URL;
+                
+                return res.json({
+                    success: true,
+                    message: 'ArwaEduc API Server is running',
+                    version: '1.0.0',
+                    endpoints: {
+                        health: '/health',
+                        api: '/api',
+                        auth: '/api/auth/login'
+                    },
+                    redirect: frontendUrl || null,
+                    note: 'Frontend not available - API only mode'
+                });
             }
-            
-            // Otherwise serve API-only response
-            return res.json({
-                success: true,
-                message: 'ArwaEduc API Server is running',
-                version: '1.0.0',
-                endpoints: {
-                    health: '/health',
-                    api: '/api',
-                    auth: '/api/auth/login'
-                },
-                redirect: frontendUrl || null,
-                note: 'Frontend not available - API only mode'
-            });
         }
     } catch (error) {
         return res.status(500).json({

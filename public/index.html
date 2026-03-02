@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - معهد Enovazone Acadimeca</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            direction: rtl;
+        }
+        
+        .login-container {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: right;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .logo {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-size: 1.8rem;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            direction: ltr;
+            text-align: left;
+        }
+        
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            border-right: 4px solid #c33;
+            display: none;
+        }
+        
+        .success-message {
+            background: #efe;
+            color: #363;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            border-right: 4px solid #363;
+            display: none;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 1rem;
+            color: #666;
+        }
+        
+        .demo-accounts {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .demo-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #555;
+            text-align: center;
+        }
+        
+        .demo-account {
+            background: #f8f9fa;
+            padding: 0.8rem;
+            margin-bottom: 0.8rem;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .demo-account:hover {
+            background: #e9ecef;
+        }
+        
+        .demo-account strong {
+            color: #333;
+        }
+        
+        .demo-account .email {
+            color: #666;
+            direction: ltr;
+            text-align: left;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="header">
+            <div class="logo">EA</div>
+            <h1>تسجيل الدخول</h1>
+            <p class="subtitle">معهد Enovazone Acadimeca للتطوير والتكوين</p>
+        </div>
+        
+        <form id="loginForm">
+            <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message"></div>
+            
+            <div class="form-group">
+                <label for="email">البريد الإلكتروني</label>
+                <input type="email" id="email" required placeholder="admin@enovazoneacadimeca.com">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">كلمة المرور</label>
+                <input type="password" id="password" required placeholder="••••••••">
+            </div>
+            
+            <button type="submit" class="login-btn" id="loginBtn">دخول</button>
+            
+            <div id="loading" class="loading">
+                جاري تسجيل الدخول...
+            </div>
+        </form>
+        
+        <div class="demo-accounts">
+            <div class="demo-title">حسابات تجريبية للاختبار</div>
+            
+            <div class="demo-account" onclick="fillLogin('superadmin@enovazoneacadimeca.com', 'superadmin123')">
+                <strong>مدير النظام الرئيسي</strong><br>
+                <span class="email">superadmin@enovazoneacadimeca.com</span><br>
+                كلمة المرور: <code>superadmin123</code>
+            </div>
+            
+            <div class="demo-account" onclick="fillLogin('admin@enovazoneacadimeca.com', 'admin123')">
+                <strong>المدير</strong><br>
+                <span class="email">admin@enovazoneacadimeca.com</span><br>
+                كلمة المرور: <code>admin123</code>
+            </div>
+            
+            <div class="demo-account" onclick="fillLogin('secretary@enovazoneacadimeca.com', 'secretary123')">
+                <strong>السكرتيرة</strong><br>
+                <span class="email">secretary@enovazoneacadimeca.com</span><br>
+                كلمة المرور: <code>secretary123</code>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function fillLogin(email, password) {
+            document.getElementById('email').value = email;
+            document.getElementById('password').value = password;
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+        
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+        
+        function setLoading(loading) {
+            document.getElementById('loginBtn').disabled = loading;
+            document.getElementById('loading').style.display = loading ? 'block' : 'none';
+            if (!loading) {
+                document.getElementById('loginBtn').textContent = 'دخول';
+            } else {
+                document.getElementById('loginBtn').textContent = 'جاري التسجيل...';
+            }
+        }
+        
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            
+            if (!email || !password) {
+                showError('يرجى إدخال البريد الإلكتروني وكلمة المرور');
+                return;
+            }
+            
+            setLoading(true);
+            
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess('تم تسجيل الدخول بنجاح!');
+                    localStorage.setItem('accessToken', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    // Redirect based on role
+                    setTimeout(() => {
+                        if (data.user.role === 'ADMIN' || data.user.role === 'SUPER_ADMIN') {
+                            window.location.href = '/admin';
+                        } else if (data.user.role === 'SECRETARY') {
+                            window.location.href = '/secretary';
+                        } else {
+                            window.location.href = '/dashboard';
+                        }
+                    }, 1500);
+                } else {
+                    showError(data.message || 'فشل في تسجيل الدخول. يرجى المحاولة مرة أخرى.');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showError('حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.');
+            } finally {
+                setLoading(false);
+            }
+        });
+        
+        // Check if already logged in
+        if (localStorage.getItem('accessToken')) {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            showSuccess('أنت مسجل دخول بالفعل. جاري إعادة التوجيه...');
+            
+            setTimeout(() => {
+                if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
+                    window.location.href = '/admin';
+                } else if (user.role === 'SECRETARY') {
+                    window.location.href = '/secretary';
+                } else {
+                    window.location.href = '/dashboard';
+                }
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
