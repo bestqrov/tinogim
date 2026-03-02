@@ -11,7 +11,9 @@ import {
     ArrowDownRight,
     Plus,
     RefreshCw,
-    Wallet
+    Wallet,
+    BookOpen,
+    GraduationCap
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -30,11 +32,18 @@ export default function AdminDashboard() {
         totalStudents: 0,
         studentsThisMonth: 0,
         totalEmployees: 0,
-        revenueThisMonth: 0, // CA Theoretical
-        totalReceivedMonth: 0, // Actual Cash In
-        expenses: 0, // Total Expenses
-        netCash: 0, // Net de Mois
+        revenueThisMonth: 0,
+        totalReceivedMonth: 0,
+        expenses: 0,
+        netCash: 0,
         unpaid: 0,
+    });
+
+    const [formationStats, setFormationStats] = useState({
+        totalFormations: 0,
+        totalInscriptions: 0,
+        totalRevenue: 0,
+        monthlyRevenue: 0,
     });
 
     const [loading, setLoading] = useState(true);
@@ -112,6 +121,14 @@ export default function AdminDashboard() {
 
                 // Revenue (CA)
                 const totalRevenue = (studentAnalytics.totalRevenue || 0) + (formationAnalytics.monthlyRevenue || 0);
+
+                // Formation stats
+                setFormationStats({
+                    totalFormations: formationAnalytics.totalFormations || 0,
+                    totalInscriptions: formationAnalytics.totalInscriptions || 0,
+                    totalRevenue: formationAnalytics.totalRevenue || 0,
+                    monthlyRevenue: formationAnalytics.monthlyRevenue || 0,
+                });
 
                 // Cash Flow
                 const totalReceived = paymentAnalytics.totalReceivedMonth || 0;
@@ -344,7 +361,63 @@ export default function AdminDashboard() {
                             <span className="text-xl font-bold text-gray-900">{stats.totalEmployees}</span>
                         </div>
                     </div>
-
+                    {/* Formation Statistics */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-purple-50 to-indigo-50 flex items-center gap-2">
+                            <GraduationCap size={16} className="text-purple-600" />
+                            <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Formations Pro</h4>
+                        </div>
+                        <div className="divide-y divide-gray-100">
+                            <div className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-purple-100 text-purple-600 rounded-lg">
+                                        <BookOpen size={18} />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-900">Formations actives</p>
+                                        <p className="text-xs text-gray-500">Modules disponibles</p>
+                                    </div>
+                                </div>
+                                <span className="text-xl font-bold text-purple-700">{formationStats.totalFormations}</span>
+                            </div>
+                            <div className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-indigo-100 text-indigo-600 rounded-lg">
+                                        <Users size={18} />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-900">Inscrits formation</p>
+                                        <p className="text-xs text-gray-500">Total inscriptions</p>
+                                    </div>
+                                </div>
+                                <span className="text-xl font-bold text-indigo-700">{formationStats.totalInscriptions}</span>
+                            </div>
+                            <div className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
+                                        <TrendingUp size={18} />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-900">CA ce mois</p>
+                                        <p className="text-xs text-gray-500">Revenus formations</p>
+                                    </div>
+                                </div>
+                                <span className="text-xl font-bold text-emerald-700">{formationStats.monthlyRevenue.toLocaleString()} <span className="text-xs font-normal text-gray-400">MAD</span></span>
+                            </div>
+                            <div className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-amber-100 text-amber-600 rounded-lg">
+                                        <DollarSign size={18} />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-900">CA total</p>
+                                        <p className="text-xs text-gray-500">Cumul formations</p>
+                                    </div>
+                                </div>
+                                <span className="text-xl font-bold text-amber-700">{formationStats.totalRevenue.toLocaleString()} <span className="text-xs font-normal text-gray-400">MAD</span></span>
+                            </div>
+                        </div>
+                    </div>
                     {/* Calendar Widget */}
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                         <div className="p-4 border-b border-gray-100 bg-gray-50">
