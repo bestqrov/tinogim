@@ -232,7 +232,7 @@ export default function SoutienDashboard() {
                             <p className="font-medium text-sm">Planning</p>
                             <p className="text-xs text-gray-400 mt-0.5">Gérer les cours</p>
                         </button>
-                        <button onClick={() => router.push('/admin/finance')} className="p-4 bg-white/10 rounded-xl hover:bg-white/20 transition-colors text-left group">
+                        <button onClick={() => router.push('/admin/finance/transactions')} className="p-4 bg-white/10 rounded-xl hover:bg-white/20 transition-colors text-left group">
                             <TrendingUp className="mb-3 text-green-400 group-hover:scale-110 transition-transform" size={22} />
                             <p className="font-medium text-sm">Rapports</p>
                             <p className="text-xs text-gray-400 mt-0.5">Voir les statistiques</p>
