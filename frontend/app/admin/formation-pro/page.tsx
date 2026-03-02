@@ -218,7 +218,7 @@ export default function FormationDashboard() {
                                     <p className="text-sm text-gray-400 mt-1">Gérer les horaires</p>
                                 </button>
                                 <button
-                                    onClick={() => router.push('/admin/finance')}
+                                    onClick={() => router.push('/admin/finance/transactions')}
                                     className="p-4 bg-white/10 rounded-xl hover:bg-white/20 transition-colors text-left group"
                                 >
                                     <TrendingUp className="mb-3 text-green-400 group-hover:scale-110 transition-transform" size={24} />
