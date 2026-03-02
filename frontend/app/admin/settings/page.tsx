@@ -86,7 +86,8 @@ export default function SettingsPage() {
             if (!token) {
                 setError('Vous devez être connecté pour accéder à cette page.');
                 setTimeout(() => {
-                    window.location.href = '/login';
+                    // Use full URL to ensure it works in all environments
+                    window.location.href = `${window.location.origin}/login`;
                 }, 2000);
                 return;
             }
@@ -129,7 +130,8 @@ export default function SettingsPage() {
                 setError('Session expirée. Redirection...');
                 localStorage.removeItem('accessToken');
                 setTimeout(() => {
-                    window.location.href = '/login';
+                    // Use full URL to ensure it works in all environments
+                    window.location.href = `${window.location.origin}/login`;
                 }, 2000);
             } else {
                 setError(`Erreur lors du chargement des utilisateurs: ${err.response?.data?.message || err.message}`);

@@ -295,11 +295,11 @@
                     // Redirect based on role
                     setTimeout(() => {
                         if (data.user.role === 'ADMIN' || data.user.role === 'SUPER_ADMIN') {
-                            window.location.href = '/admin';
+                            window.location.href = window.location.origin + '/admin';
                         } else if (data.user.role === 'SECRETARY') {
-                            window.location.href = '/secretary';
+                            window.location.href = window.location.origin + '/secretary';
                         } else {
-                            window.location.href = '/dashboard';
+                            window.location.href = window.location.origin + '/dashboard';
                         }
                     }, 1500);
                 } else {
@@ -320,11 +320,11 @@
             
             setTimeout(() => {
                 if (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') {
-                    window.location.href = '/admin';
+                    window.location.href = window.location.origin + '/admin';
                 } else if (user.role === 'SECRETARY') {
-                    window.location.href = '/secretary';
+                    window.location.href = window.location.origin + '/secretary';
                 } else {
-                    window.location.href = '/dashboard';
+                    window.location.href = window.location.origin + '/dashboard';
                 }
             }, 2000);
         }

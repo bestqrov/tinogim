@@ -58,7 +58,8 @@ api.interceptors.response.use(
                 processQueue(e, null);
                 clearTokens();
                 if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
-                    window.location.href = '/login';
+                    // Use full URL to ensure it works in all environments
+                    window.location.href = `${window.location.origin}/login`;
                 }
                 return Promise.reject(e);
             } finally {

@@ -71,7 +71,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         clearTokens();
         set({ user: null, accessToken: null });
         if (typeof window !== 'undefined') {
-            window.location.href = '/login';
+            // Use full URL to ensure it works in all environments
+            window.location.href = `${window.location.origin}/login`;
         }
     },
     getMe: async () => {
