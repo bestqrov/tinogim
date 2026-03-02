@@ -8,6 +8,10 @@ export const teachersService = {
         const response = await api.get<ApiResponse<Teacher[]>>('/teachers');
         return response.data.data;
     },
+    getById: async (id: string): Promise<Teacher> => {
+        const response = await api.get<ApiResponse<Teacher>>(`/teachers/${id}`);
+        return response.data.data;
+    },
     create: async (data: Partial<Teacher>): Promise<Teacher> => {
         const response = await api.post<ApiResponse<Teacher>>('/teachers', data);
         return response.data.data;

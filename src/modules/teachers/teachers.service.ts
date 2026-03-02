@@ -47,6 +47,34 @@ export const deleteTeacher = async (id: string) => {
     });
 };
 
+export const getTeacherById = async (id: string) => {
+    return await prisma.teacher.findUnique({
+        where: { id },
+        include: {
+            groups: {
+                include: {
+                    students: {
+                        select: {
+                            id: true,
+                            name: true,
+                            surname: true,
+                            phone: true,
+                            email: true,
+                            schoolLevel: true,
+                            attendance: {
+                                orderBy: { date: 'desc' },
+                                take: 10
+                            }
+                        }
+                    },
+                    _count: { select: { students: true } }
+                }
+            },
+            _count: { select: { groups: true } }
+        }
+    });
+};
+
 export const calculateMonthlyTeacherExpenses = async () => {
     // Get all teachers with their groups
     const teachers = await prisma.teacher.findMany({

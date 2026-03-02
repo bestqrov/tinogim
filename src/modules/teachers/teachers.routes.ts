@@ -5,6 +5,7 @@ const router = Router();
 
 router.post('/', teachersController.createTeacher);
 router.get('/', teachersController.getAllTeachers);
+router.get('/:id', teachersController.getTeacherById);
 router.put('/:id', teachersController.updateTeacher);
 router.delete('/:id', teachersController.deleteTeacher);
 

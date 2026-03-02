@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import {
     createAttendance,
     getAttendanceByStudent,
+    upsertBulkAttendance,
+    getAttendanceByGroup,
 } from './attendance.service';
 import { sendSuccess, sendError } from '../../utils/response';
 
@@ -52,5 +54,32 @@ export const getByStudent = async (
         sendSuccess(res, attendances, 'Attendance retrieved successfully', 200);
     } catch (error: any) {
         sendError(res, error.message, 'Failed to retrieve attendance', 404);
+    }
+};
+
+export const bulkCreate = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { records } = req.body;
+        if (!Array.isArray(records) || records.length === 0) {
+            sendError(res, 'records array is required', 'Validation error', 400);
+            return;
+        }
+        const date = new Date(records[0].date);
+        const processed = records.map((r: any) => ({ studentId: r.studentId, date, status: r.status }));
+        const result = await upsertBulkAttendance(processed);
+        sendSuccess(res, result, 'Attendance saved successfully', 200);
+    } catch (error: any) {
+        sendError(res, error.message, 'Failed to save attendance', 400);
+    }
+};
+
+export const getByGroup = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        const { date } = req.query;
+        const result = await getAttendanceByGroup(id, date as string | undefined);
+        sendSuccess(res, result, 'Group attendance retrieved successfully', 200);
+    } catch (error: any) {
+        sendError(res, error.message, 'Failed to retrieve group attendance', 404);
     }
 };

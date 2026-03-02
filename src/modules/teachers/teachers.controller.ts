@@ -37,3 +37,15 @@ export const deleteTeacher = async (req: Request, res: Response) => {
         sendError(res, error.message, 'Failed to delete teacher', 400);
     }
 };
+
+export const getTeacherById = async (req: Request, res: Response) => {
+    try {
+        const teacher = await teachersService.getTeacherById(req.params.id);
+        if (!teacher) {
+            return sendError(res, 'Teacher not found', 'Teacher not found', 404);
+        }
+        sendSuccess(res, teacher, 'Teacher retrieved successfully');
+    } catch (error: any) {
+        sendError(res, error.message, 'Failed to retrieve teacher');
+    }
+};

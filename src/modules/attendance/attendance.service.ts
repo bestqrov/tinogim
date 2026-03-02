@@ -59,3 +59,43 @@ export const getAttendanceByStudent = async (studentId: string) => {
 
     return attendances;
 };
+
+export const upsertBulkAttendance = async (records: { studentId: string; date: Date; status: string }[]) => {
+    const results = [];
+    for (const record of records) {
+        const existing = await prisma.attendance.findFirst({
+            where: { studentId: record.studentId, date: record.date }
+        });
+        if (existing) {
+            const updated = await prisma.attendance.update({
+                where: { id: existing.id },
+                data: { status: record.status }
+            });
+            results.push(updated);
+        } else {
+            const created = await prisma.attendance.create({
+                data: { studentId: record.studentId, date: record.date, status: record.status }
+            });
+            results.push(created);
+        }
+    }
+    return results;
+};
+
+export const getAttendanceByGroup = async (groupId: string, date?: string) => {
+    const group = await prisma.group.findUnique({
+        where: { id: groupId },
+        include: { students: { select: { id: true, name: true, surname: true } } }
+    });
+    if (!group) throw new Error('Group not found');
+    const dateFilter = date ? new Date(date) : undefined;
+    const attendances = await prisma.attendance.findMany({
+        where: {
+            studentId: { in: (group.students as any[]).map((s: any) => s.id) },
+            ...(dateFilter ? { date: dateFilter } : {})
+        },
+        include: { student: { select: { id: true, name: true, surname: true } } },
+        orderBy: { date: 'desc' }
+    });
+    return { group, attendances };
+};

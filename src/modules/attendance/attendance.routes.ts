@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { create, getByStudent } from './attendance.controller';
+import { create, getByStudent, bulkCreate, getByGroup } from './attendance.controller';
 import { authMiddleware } from '../../middlewares/auth.middleware';
 import { roleMiddleware } from '../../middlewares/role.middleware';
 
@@ -10,6 +10,8 @@ router.use(authMiddleware);
 router.use(roleMiddleware('ADMIN'));
 
 router.post('/', create);
+router.post('/bulk', bulkCreate);
+router.get('/group/:id', getByGroup);
 router.get('/student/:id', getByStudent);
 
 export default router;

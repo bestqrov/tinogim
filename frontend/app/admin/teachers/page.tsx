@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Button from '@/components/Button';
 import {
     PlusCircle,
@@ -20,7 +20,8 @@ import {
     Calculator,
     Briefcase,
     DollarSign,
-    Percent
+    Percent,
+    LayoutDashboard
 } from 'lucide-react';
 import { teachersService } from '@/lib/services/teachers';
 import { formationsService } from '@/lib/services/formations';
@@ -50,6 +51,7 @@ const PAYMENT_TYPES = [
 
 const TeachersContent = () => {
     const searchParams = useSearchParams();
+    const router = useRouter();
     const type = searchParams.get('type') as 'FORMATION' | 'SOUTIEN' | null;
     const isFormationMode = type === 'FORMATION';
 
@@ -290,6 +292,14 @@ const TeachersContent = () => {
                                 <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">{teacher.paymentType}</p>
                             </div>
                         </div>
+
+                        <button
+                            onClick={() => router.push(`/admin/teachers/${teacher.id}`)}
+                            className="mt-3 w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-black font-bold text-sm transition-all shadow-sm shadow-amber-300/30"
+                        >
+                            <LayoutDashboard size={15} />
+                            Tableau de bord
+                        </button>
                     </div>
                 ))}
             </div>
