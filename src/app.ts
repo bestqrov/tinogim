@@ -49,13 +49,15 @@ apiRouter.use('/transactions', transactionsRoutes);
 app.use('/api', apiRouter);
 
 // ================= FRONTEND STATIC =================
-// Serve static files from public directory
-const publicPath = path.join(__dirname, '..', 'public');
-app.use(express.static(publicPath));
-
-// Frontend static files serving with error handling
+// Frontend static files serving - prioritize Next.js over public
 const frontendPath = path.join(__dirname, '..', 'frontend', 'dist');
 app.use(express.static(frontendPath));
+
+// Serve static files from public directory (excluding index.html to prevent conflicts)
+const publicPath = path.join(__dirname, '..', 'public');
+app.use(express.static(publicPath, { 
+    index: false  // Don't serve index.html from public directory
+}));
 
 // Catch-all route for frontend with fallback
 app.get('*', (req, res) => {
@@ -76,7 +78,7 @@ app.get('*', (req, res) => {
         if (require('fs').existsSync(frontendIndex)) {
             return res.sendFile(frontendIndex);
         } else {
-            // Fallback to simple login page
+            // Fallback to simple login page only for development
             const publicIndex = path.join(publicPath, 'index.html');
             if (require('fs').existsSync(publicIndex)) {
                 return res.sendFile(publicIndex);
