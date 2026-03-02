@@ -92,7 +92,7 @@ export default function TopBar() {
     };
 
     return (
-        <header className="h-16 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 fixed top-0 right-0 left-64 z-20 px-6 flex items-center justify-between transition-all duration-300">
+        <header className="h-16 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 fixed top-0 right-0 left-72 z-20 px-6 flex items-center justify-between transition-all duration-300">
             {/* Left: Search or Breadcrumbs */}
             <div className="flex items-center gap-4">
                 <div className="relative">
