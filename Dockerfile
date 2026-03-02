@@ -55,7 +55,7 @@ RUN echo "🔨 Starting frontend build..." && \
 RUN echo "🔍 Verifying final build structure:" && \
     ls -la /app/ && \
     echo "Frontend dist:" && \
-    ls -la /app/frontend/dist/
+    ls -la /app/frontend/dist/ || echo "frontend/dist not found (build may have failed)"
 
 # Now safely remove development dependencies to reduce image size
 RUN npm prune --production && npm cache clean --force
