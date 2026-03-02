@@ -44,8 +44,8 @@ export const getTeacherById = async (req: Request, res: Response) => {
         if (!teacher) {
             return sendError(res, 'Teacher not found', 'Teacher not found', 404);
         }
-        sendSuccess(res, teacher, 'Teacher retrieved successfully');
+        return sendSuccess(res, teacher, 'Teacher retrieved successfully');
     } catch (error: any) {
-        sendError(res, error.message, 'Failed to retrieve teacher');
+        return sendError(res, error.message, 'Failed to retrieve teacher');
     }
 };

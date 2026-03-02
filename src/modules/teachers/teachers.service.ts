@@ -61,7 +61,7 @@ export const getTeacherById = async (id: string) => {
                             phone: true,
                             email: true,
                             schoolLevel: true,
-                            attendance: {
+                            attendances: {
                                 orderBy: { date: 'desc' },
                                 take: 10
                             }
