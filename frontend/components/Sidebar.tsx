@@ -259,7 +259,7 @@ export function Sidebar({ currentPath, role }: SidebarProps) {
           {menuItems.map((item) => {
             const active = isActive(item);
             const activeClass = active
-              ? `${item.activeColor.split(' ')[0]} text-white shadow-md border-r-4 ${item.activeColor.split(' ')[1].replace('border-', 'border-')}`
+              ? 'bg-gradient-to-r from-amber-500/20 to-yellow-400/10 text-amber-100 shadow-lg shadow-amber-500/10 border-r-4 border-amber-400 ring-1 ring-amber-400/20'
               : 'text-slate-400 hover:bg-white/5 hover:text-white';
 
             return (
@@ -271,14 +271,14 @@ export function Sidebar({ currentPath, role }: SidebarProps) {
                       className={`
                         w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group
                         ${active || expandedMenus.includes(item.id)
-                          ? 'bg-white/5 text-white'
+                          ? 'bg-gradient-to-r from-amber-500/20 to-yellow-400/10 text-amber-100 shadow-lg shadow-amber-500/10 ring-1 ring-amber-400/20'
                           : 'text-slate-400 hover:bg-white/5 hover:text-white'
                         }
                       `}
                     >
                       <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg transition-colors ${active || expandedMenus.includes(item.id) ? 'bg-white/10' : 'bg-white/5'}`}>
-                          <item.icon size={18} className={active || expandedMenus.includes(item.id) ? item.iconColor : 'text-slate-500'} />
+                        <div className={`p-2 rounded-lg transition-colors ${active || expandedMenus.includes(item.id) ? 'bg-amber-500/20' : 'bg-white/5'}`}>
+                          <item.icon size={18} className={active || expandedMenus.includes(item.id) ? 'text-amber-400' : 'text-slate-500'} />
                         </div>
                         <span className="font-semibold text-sm">{item.label}</span>
                       </div>
@@ -299,13 +299,13 @@ export function Sidebar({ currentPath, role }: SidebarProps) {
                                 className={`
                                   w-full text-left px-3 py-2 rounded-lg text-sm transition-all duration-200 relative
                                   ${isSubActive
-                                    ? 'text-white font-bold bg-white/10'
+                                    ? 'text-amber-200 font-bold bg-amber-500/15 ring-1 ring-amber-400/20 shadow-sm shadow-amber-500/10'
                                     : 'text-slate-500 hover:text-white'
                                   }
                                 `}
                               >
                                 {isSubActive && (
-                                  <span className={`absolute -left-[19px] top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full ${item.iconColor.replace('text-', 'bg-')}`}></span>
+                                  <span className="absolute -left-[19px] top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-amber-400 shadow-sm shadow-amber-400/50"></span>
                                 )}
                                 {sub.label}
                               </button>
@@ -323,8 +323,8 @@ export function Sidebar({ currentPath, role }: SidebarProps) {
                       ${activeClass}
                     `}
                   >
-                    <div className={`p-2 rounded-lg transition-colors ${active ? 'bg-white/10' : 'bg-white/5 group-hover:bg-white/10'}`}>
-                      <item.icon size={18} className={active ? item.iconColor : 'text-slate-500 group-hover:text-slate-300 transition-transform'} />
+                    <div className={`p-2 rounded-lg transition-colors ${active ? 'bg-amber-500/20' : 'bg-white/5 group-hover:bg-white/10'}`}>
+                      <item.icon size={18} className={active ? 'text-amber-400' : 'text-slate-500 group-hover:text-slate-300 transition-transform'} />
                     </div>
                     <span className="font-semibold text-sm">{item.label}</span>
                   </button>

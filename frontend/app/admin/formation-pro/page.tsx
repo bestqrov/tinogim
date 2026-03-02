@@ -198,7 +198,7 @@ export default function FormationDashboard() {
                                     className="p-4 bg-white/10 rounded-xl hover:bg-white/20 transition-colors text-left group"
                                 >
                                     <Users className="mb-3 text-purple-400 group-hover:scale-110 transition-transform" size={24} />
-                                    <p className="font-medium">Inscrire un élève</p>
+                                    <p className="font-medium">Inscrire un stagiaire</p>
                                     <p className="text-sm text-gray-400 mt-1">Ajouter une inscription</p>
                                 </button>
                                 <button
