@@ -37,9 +37,13 @@ RUN echo "🔨 Starting frontend build..." && \
     npm ci --include=dev && \
     npm run build && \
     echo "✅ Frontend build completed" && \
-    ls -la dist/ && \
-    echo "📄 Frontend index.html:" && \
-    ls -la dist/index.html
+    echo "📁 Frontend working directory contents:" && \
+    ls -la && \
+    echo "📁 Checking for dist directory:" && \
+    ls -la dist/ || echo "dist not found, checking .next:" && \
+    ls -la .next/ || echo "Neither dist nor .next found" && \
+    echo "📄 Frontend index.html check:" && \
+    (ls -la dist/index.html || ls -la .next/index.html || echo "No index.html found")
 
 # Verify the complete application build
 RUN echo "🔍 Verifying final build structure:" && \
