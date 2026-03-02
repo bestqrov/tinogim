@@ -13,7 +13,9 @@ import {
     RefreshCw,
     Wallet,
     BookOpen,
-    GraduationCap
+    GraduationCap,
+    Info,
+    X
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -48,6 +50,7 @@ export default function AdminDashboard() {
 
     const [loading, setLoading] = useState(true);
     const [isInscriptionModalOpen, setIsInscriptionModalOpen] = useState(false);
+    const [showFinanceHelp, setShowFinanceHelp] = useState(false);
 
     useEffect(() => {
         loadDashboardData(true);
@@ -171,6 +174,111 @@ export default function AdminDashboard() {
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
 
+            {/* Financial Help Modal */}
+            {showFinanceHelp && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setShowFinanceHelp(false)}>
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+                        {/* Header */}
+                        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
+                                    <Info size={20} />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-bold text-gray-900">Guide du Rapport Financier</h2>
+                                    <p className="text-xs text-gray-500">Explication détaillée de chaque indicateur</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setShowFinanceHelp(false)} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+                                <X size={20} className="text-gray-500" />
+                            </button>
+                        </div>
+
+                        {/* Body */}
+                        <div className="p-6 space-y-5">
+
+                            {/* Net du Mois */}
+                            <div className="bg-gray-900 text-white rounded-2xl p-5">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <Wallet size={18} className="text-blue-400" />
+                                    <h3 className="font-bold text-base">Net du Mois (Cash Flow)</h3>
+                                </div>
+                                <p className="text-gray-300 text-sm leading-relaxed mb-3">
+                                    C'est l'argent réellement disponible dans la caisse à la fin du mois. Il représente ce que vous avez <strong className="text-white">encaissé</strong> moins ce que vous avez <strong className="text-white">dépensé</strong>.
+                                </p>
+                                <div className="bg-white/10 rounded-xl p-3 font-mono text-sm text-center">
+                                    <span className="text-emerald-400">Encaissements</span> <span className="text-gray-400">−</span> <span className="text-red-400">Dépenses</span> <span className="text-gray-400">=</span> <span className="text-white font-bold">Net du Mois</span>
+                                </div>
+                                <div className="mt-2 bg-white/5 rounded-xl p-3 font-mono text-sm text-center">
+                                    <span className="text-emerald-400">{stats.totalReceivedMonth.toLocaleString()} MAD</span> <span className="text-gray-400">−</span> <span className="text-red-400">{stats.expenses.toLocaleString()} MAD</span> <span className="text-gray-400">=</span> <span className={`font-bold ${stats.netCash >= 0 ? 'text-white' : 'text-red-400'}`}>{stats.netCash.toLocaleString()} MAD</span>
+                                </div>
+                            </div>
+
+                            {/* CA */}
+                            <div className="border border-purple-100 bg-purple-50 rounded-2xl p-5">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <TrendingUp size={18} className="text-purple-600" />
+                                    <h3 className="font-bold text-base text-purple-900">Chiffre d'Affaires (CA)</h3>
+                                </div>
+                                <p className="text-purple-800 text-sm leading-relaxed mb-3">
+                                    Total théorique de ce que <strong>tous les élèves doivent payer</strong> pour ce mois (soutien + formations). C'est l'objectif de revenus, pas les paiements réels.
+                                </p>
+                                <div className="bg-white rounded-xl p-3 text-sm text-center text-purple-700 font-medium">
+                                    CA ce mois = <span className="font-bold">{stats.revenueThisMonth.toLocaleString()} MAD</span>
+                                </div>
+                            </div>
+
+                            {/* Encaissements */}
+                            <div className="border border-emerald-100 bg-emerald-50 rounded-2xl p-5">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <ArrowUpRight size={18} className="text-emerald-600" />
+                                    <h3 className="font-bold text-base text-emerald-900">Encaissements du Mois</h3>
+                                </div>
+                                <p className="text-emerald-800 text-sm leading-relaxed mb-3">
+                                    L'argent <strong>réellement reçu</strong> ce mois-ci, c'est-à-dire les paiements effectivement enregistrés par les élèves (en espèces, chèque ou virement).
+                                </p>
+                                <div className="bg-white rounded-xl p-3 text-sm text-center text-emerald-700 font-medium">
+                                    Reçu ce mois = <span className="font-bold">{stats.totalReceivedMonth.toLocaleString()} MAD</span>
+                                </div>
+                            </div>
+
+                            {/* Impayés */}
+                            <div className="border border-orange-100 bg-orange-50 rounded-2xl p-5">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <DollarSign size={18} className="text-orange-600" />
+                                    <h3 className="font-bold text-base text-orange-900">Reste à Encaisser (Impayés)</h3>
+                                </div>
+                                <p className="text-orange-800 text-sm leading-relaxed mb-3">
+                                    La différence entre le CA théorique et ce qui a été payé. C'est ce que les élèves <strong>doivent encore payer</strong>. Un montant élevé signifie que beaucoup d'élèves n'ont pas encore réglé leur mensualité.
+                                </p>
+                                <div className="bg-white rounded-xl p-3 font-mono text-sm text-center text-orange-700">
+                                    <span className="text-purple-600">{stats.revenueThisMonth.toLocaleString()} MAD</span> <span className="text-gray-500">−</span> <span className="text-emerald-600">{stats.totalReceivedMonth.toLocaleString()} MAD</span> <span className="text-gray-500">=</span> <span className="font-bold text-orange-600">{stats.unpaid.toLocaleString()} MAD impayés</span>
+                                </div>
+                            </div>
+
+                            {/* Dépenses */}
+                            <div className="border border-red-100 bg-red-50 rounded-2xl p-5">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <ArrowDownRight size={18} className="text-red-600" />
+                                    <h3 className="font-bold text-base text-red-900">Dépenses Totales</h3>
+                                </div>
+                                <p className="text-red-800 text-sm leading-relaxed mb-3">
+                                    Toutes les <strong>sorties d'argent</strong> enregistrées : salaires des professeurs, loyer, factures, fournitures, etc.
+                                </p>
+                                <div className="bg-white rounded-xl p-3 text-sm text-center text-red-700 font-medium">
+                                    Total dépenses = <span className="font-bold">{stats.expenses.toLocaleString()} MAD</span>
+                                </div>
+                            </div>
+
+                            {/* Summary */}
+                            <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 text-sm text-blue-800">
+                                <strong>💡 En résumé :</strong> Le <strong>CA</strong> est l'objectif, les <strong>Encaissements</strong> sont la réalité, les <strong>Impayés</strong> sont le manque, et le <strong>Net</strong> est votre bénéfice réel du mois.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Top Bar: Welcome & Actions */}
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                 <div className="flex items-center gap-4">
@@ -270,14 +378,23 @@ export default function AdminDashboard() {
                                 <div className="p-3 bg-purple-50 text-purple-600 rounded-xl">
                                     <TrendingUp size={24} />
                                 </div>
-                                <span className="px-2.5 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">Objectif</span>
+                                <div className="flex items-center gap-2">
+                                    <span className="px-2.5 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">Objectif</span>
+                                    <button
+                                        onClick={() => setShowFinanceHelp(true)}
+                                        className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                        title="Comprendre le rapport financier"
+                                    >
+                                        <Info size={16} />
+                                    </button>
+                                </div>
                             </div>
                             <h4 className="text-gray-500 text-sm font-medium">Chiffre d'Affaires</h4>
                             <p className="text-2xl font-bold text-gray-900 mt-1">
                                 {stats.revenueThisMonth.toLocaleString()} <span className="text-sm font-normal text-gray-500">MAD</span>
                             </p>
                             <div className="mt-3 pt-3 border-t border-gray-50 flex items-center justify-between text-xs">
-                                <span className="text-gray-500">Valeur théorique totale</span>
+                                <span className="text-gray-500">Dont reste à encaisser</span>
                                 <span className="text-orange-500 font-medium">{stats.unpaid.toLocaleString()} MAD impayés</span>
                             </div>
                         </div>
