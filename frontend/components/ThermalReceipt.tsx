@@ -42,7 +42,6 @@ export default function ThermalReceipt({
     amountPaid,
     notes,
 }: ThermalReceiptProps) {
-    const remaining     = totalAmount - amountPaid;
     const formattedDate = new Date(date).toLocaleDateString('fr-FR');
 
     return (
@@ -93,7 +92,6 @@ export default function ThermalReceipt({
                     ▸ INFORMATIONS CLIENT
                 </div>
                 <div>Nom      : <strong>{issuedTo}</strong></div>
-                {phoneNumber && <div>Tél      : {phoneNumber}</div>}
                 <div>Paiement : <strong>{paymentMethod === 'Cash' ? 'Espèces' : 'Chèque'}</strong></div>
                 {paymentMethod === 'Check' && checkNumber && (
                     <div>Chèque No: <strong>{checkNumber}</strong></div>
@@ -121,20 +119,9 @@ export default function ThermalReceipt({
 
             {/* ── TOTALS ── */}
             <div style={{ fontSize: 11, marginBottom: 6 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-                    <span>Sous-total</span>
-                    <span>{totalAmount.toFixed(2)} MAD</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-                    <span>Montant payé</span>
-                    <span><strong>{amountPaid.toFixed(2)} MAD</strong></span>
-                </div>
-                <div style={{ borderTop: '1px dashed #555', margin: '4px 0' }} />
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: 13 }}>
-                    <span>RESTE DÛ</span>
-                    <span style={{ color: remaining > 0 ? '#b91c1c' : '#15803d' }}>
-                        {remaining.toFixed(2)} MAD
-                    </span>
+                    <span>TOTAL</span>
+                    <span>{totalAmount.toFixed(2)} MAD</span>
                 </div>
             </div>
 

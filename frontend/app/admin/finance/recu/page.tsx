@@ -220,7 +220,6 @@ export default function RecuPage() {
 
         const currentDate = new Date(receipt.date).toLocaleDateString('fr-FR');
         const currentTime = receipt.time || new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-        const remaining = receipt.totalAmount - receipt.amountPaid;
         printWindow.document.write(`
             <!DOCTYPE html>
             <html>
@@ -283,7 +282,6 @@ export default function RecuPage() {
                 <div style="margin-bottom:6px">
                     <div class="label">▸ Informations client</div>
                     <div class="md">Nom &nbsp;&nbsp;&nbsp;&nbsp;: <strong>${receipt.issuedTo}</strong></div>
-                    ${receipt.phoneNumber ? `<div class="md">Tél &nbsp;&nbsp;&nbsp;&nbsp;: ${receipt.phoneNumber}</div>` : ''}
                     <div class="md">Paiement : <strong>${receipt.paymentMethod === 'Cash' ? 'Espèces' : 'Chèque'}</strong></div>
                     ${receipt.paymentMethod === 'Check' && receipt.checkNumber ? `<div class="md">Chèque No: <strong>${receipt.checkNumber}</strong></div>` : ''}
                 </div>
@@ -302,16 +300,9 @@ export default function RecuPage() {
 
                 <!-- TOTALS -->
                 <div style="margin-bottom:6px">
-                    <div class="flex md" style="margin-bottom:3px">
-                        <span>Sous-total</span><span>${receipt.totalAmount.toFixed(2)} MAD</span>
-                    </div>
-                    <div class="flex md" style="margin-bottom:3px">
-                        <span>Montant payé</span><span><strong>${receipt.amountPaid.toFixed(2)} MAD</strong></span>
-                    </div>
-                    <div class="hr-dot"></div>
                     <div class="flex bold lg">
-                        <span>RESTE DÛ</span>
-                        <span class="${remaining > 0 ? 'red' : 'green'}">${remaining.toFixed(2)} MAD</span>
+                        <span>TOTAL</span>
+                        <span>${receipt.totalAmount.toFixed(2)} MAD</span>
                     </div>
                 </div>
 
