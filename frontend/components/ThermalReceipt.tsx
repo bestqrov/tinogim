@@ -51,16 +51,12 @@ export default function ThermalReceipt({
             fontSize: 12,
             color: '#111',
             background: '#fff',
-            padding: '16px 12px',
+            padding: '4px 12px 16px',
             lineHeight: 1.6,
             letterSpacing: 0.3,
         }}>
             {/* ── HEADER ── */}
             <div style={{ textAlign: 'center', marginBottom: 10 }}>
-                {logo && (
-                    <img src={logo} alt="logo"
-                        style={{ width: 56, height: 56, objectFit: 'contain', marginBottom: 4 }} />
-                )}
                 <div style={{ fontWeight: 900, fontSize: 15, letterSpacing: 1.5, textTransform: 'uppercase' }}>
                     {schoolName}
                 </div>

@@ -235,7 +235,7 @@ export default function RecuPage() {
                         width: 80mm;
                         color: #111;
                         background: #fff;
-                        padding: 10mm 6mm;
+                        padding: 2mm 6mm 10mm;
                         line-height: 1.6;
                     }
                     .center  { text-align: center; }
@@ -258,7 +258,6 @@ export default function RecuPage() {
             <body>
                 <!-- HEADER -->
                 <div class="center" style="margin-bottom:10px">
-                    ${schoolProfile.logo ? `<img src="${schoolProfile.logo}" style="width:56px;height:56px;object-fit:contain;display:block;margin:0 auto 4px" />` : ''}
                     <div class="xl bold">${schoolProfile.schoolName}</div>
                     <div class="sm" style="margin-top:2px">${schoolProfile.address}</div>
                     ${schoolProfile.phone ? `<div class="sm">Tél : ${schoolProfile.phone}</div>` : ''}
