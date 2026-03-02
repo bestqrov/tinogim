@@ -8,7 +8,7 @@ export const env = {
     NODE_ENV: process.env.NODE_ENV || 'development',
     JWT_SECRET: process.env.JWT_SECRET || 'your-secret-key',
     JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
-    FRONTEND_URL: process.env.FRONTEND_URL || 'https://appinjahi.techmar.cloud',
+    FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:3001',
     PROXY_TARGET: process.env.PROXY_TARGET || 'http://127.0.0.1:3001',
 };
 
