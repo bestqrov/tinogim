@@ -137,7 +137,7 @@ export default function SoutienDashboard() {
                         Liste Étudiants
                     </button>
                     <button
-                        onClick={() => router.push('/admin/students/register')}
+                        onClick={() => router.push('/admin/inscriptions')}
                         className="px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium hover:bg-blue-700 transition-colors"
                     >
                         + Nouvel Étudiant
@@ -217,7 +217,7 @@ export default function SoutienDashboard() {
                 <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl shadow-lg p-6 text-white">
                     <h3 className="text-lg font-bold mb-4">Actions Rapides</h3>
                     <div className="grid grid-cols-2 gap-3">
-                        <button onClick={() => router.push('/admin/students/register')} className="p-4 bg-white/10 rounded-xl hover:bg-white/20 transition-colors text-left group">
+                        <button onClick={() => router.push('/admin/inscriptions')} className="p-4 bg-white/10 rounded-xl hover:bg-white/20 transition-colors text-left group">
                             <GraduationCap className="mb-3 text-blue-400 group-hover:scale-110 transition-transform" size={22} />
                             <p className="font-medium text-sm">Nouvel Étudiant</p>
                             <p className="text-xs text-gray-400 mt-0.5">Inscrire un élève</p>
