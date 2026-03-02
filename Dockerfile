@@ -34,8 +34,16 @@ RUN npm run build:full
 # Now safely remove development dependencies to reduce image size
 RUN npm prune --production && npm cache clean --force
 
+# Debug: List contents to verify frontend build
+RUN echo "📁 Frontend directory contents:" && ls -la /app/frontend/ || echo "No frontend directory"
+RUN echo "📁 Frontend dist contents:" && ls -la /app/frontend/dist/ || echo "No frontend/dist directory"
+RUN echo "📁 App directory contents:" && ls -la /app/
+
 # Remove frontend source files but keep dist
 RUN rm -rf /app/frontend/src /app/frontend/app /app/frontend/components /app/frontend/node_modules || true
+
+# Final verification after cleanup
+RUN echo "📁 After cleanup - Frontend dist:" && ls -la /app/frontend/dist/ || echo "Frontend dist not found after cleanup"
 
 # Expose the port the app runs on
 EXPOSE 3000

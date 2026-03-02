@@ -51,7 +51,15 @@ app.use('/api', apiRouter);
 // ================= FRONTEND STATIC =================
 // Frontend static files serving - prioritize Next.js over public
 const frontendPath = path.join(__dirname, '..', 'frontend', 'dist');
-app.use(express.static(frontendPath));
+const absoluteFrontendPath = path.resolve(frontendPath);
+
+console.log('🔧 Frontend serving configuration:');
+console.log('   - __dirname:', __dirname);
+console.log('   - frontendPath:', frontendPath);
+console.log('   - absoluteFrontendPath:', absoluteFrontendPath);
+console.log('   - Exists:', require('fs').existsSync(absoluteFrontendPath));
+
+app.use(express.static(absoluteFrontendPath));
 
 // Serve static files from public directory (excluding index.html to prevent conflicts)
 const publicPath = path.join(__dirname, '..', 'public');
@@ -71,25 +79,46 @@ app.get('*', (req, res) => {
     }
 
     // Try to serve frontend index.html first
-    const frontendIndex = path.join(frontendPath, 'index.html');
+    const frontendIndex = path.join(absoluteFrontendPath, 'index.html');
+    
+    console.log(`🔍 Serving request for: ${req.path}`);
+    console.log(`   - Looking for: ${frontendIndex}`);
+    console.log(`   - File exists: ${require('fs').existsSync(frontendIndex)}`);
     
     // Check if frontend build exists
     try {
         if (require('fs').existsSync(frontendIndex)) {
+            console.log('✅ Serving React frontend');
             return res.sendFile(frontendIndex);
         } else {
+            // List available files in frontend directory for debugging
+            try {
+                const files = require('fs').readdirSync(absoluteFrontendPath);
+                console.log(`📁 Files in frontend dist: ${files.join(', ')}`);
+            } catch (e) {
+                console.log(`❌ Cannot read frontend directory: ${e instanceof Error ? e.message : String(e)}`);
+            }
+            
             // Fallback to simple login page only for development
             const publicIndex = path.join(publicPath, 'index.html');
             if (require('fs').existsSync(publicIndex)) {
+                console.log('⚠️  Serving fallback public index.html');
                 return res.sendFile(publicIndex);
             } else {
                 // Last fallback - API-only response
+                console.log('❌ Frontend not available - serving API info');
                 const frontendUrl = process.env.FRONTEND_URL || process.env.APP_URL;
                 
                 return res.json({
                     success: true,
                     message: 'ArwaEduc API Server is running',
                     version: '1.0.0',
+                    debug: {
+                        frontendPath: absoluteFrontendPath,
+                        frontendIndex: frontendIndex,
+                        frontendExists: require('fs').existsSync(frontendIndex),
+                        publicPath: publicPath
+                    },
                     endpoints: {
                         health: '/health',
                         api: '/api',
@@ -101,10 +130,12 @@ app.get('*', (req, res) => {
             }
         }
     } catch (error) {
+        console.log(`💥 Error serving frontend: ${error instanceof Error ? error.message : String(error)}`);
         return res.status(500).json({
             success: false,
             error: 'Server configuration error',
-            message: 'Unable to serve frontend files'
+            message: 'Unable to serve frontend files',
+            debug: error instanceof Error ? error.message : String(error)
         });
     }
 });
