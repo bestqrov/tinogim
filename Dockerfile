@@ -28,17 +28,14 @@ COPY . .
 # Generate Prisma Client
 RUN npx prisma generate
 
-# Build the TypeScript application BEFORE removing dev dependencies
-RUN npm run build:backend
+# Build the complete application (backend + frontend)
+RUN npm run build:full
 
 # Now safely remove development dependencies to reduce image size
 RUN npm prune --production && npm cache clean --force
 
-# Remove frontend node_modules to save space (not needed for backend-only)
-RUN rm -rf /app/frontend/node_modules || true
-
-# Remove source TypeScript files and config after successful build
-RUN rm -rf /app/src /app/tsconfig.json || true
+# Remove frontend source files but keep dist
+RUN rm -rf /app/frontend/src /app/frontend/app /app/frontend/components /app/frontend/node_modules || true
 
 # Expose the port the app runs on
 EXPOSE 3000
