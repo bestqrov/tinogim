@@ -299,7 +299,8 @@
                         } else if (data.user.role === 'SECRETARY') {
                             window.location.href = window.location.origin + '/secretary';
                         } else {
-                            window.location.href = window.location.origin + '/dashboard';
+                            // Unknown role, redirect to login
+                            window.location.href = window.location.origin + '/login';
                         }
                     }, 1500);
                 } else {
@@ -324,7 +325,8 @@
                 } else if (user.role === 'SECRETARY') {
                     window.location.href = window.location.origin + '/secretary';
                 } else {
-                    window.location.href = window.location.origin + '/dashboard';
+                    // Unknown role, redirect to login
+                    window.location.href = window.location.origin + '/login';
                 }
             }, 2000);
         }

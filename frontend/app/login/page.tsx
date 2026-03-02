@@ -31,7 +31,10 @@ export default function LoginPage() {
         const user = useAuthStore.getState().user;
         if (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') router.push('/admin');
         else if (user?.role === 'SECRETARY') router.push('/secretary');
-        else router.push('/');
+        else {
+            // Unknown role, stay on login with error
+            setError('Rôle utilisateur non reconnu. Contactez l\'administrateur.');
+        }
     };
 
     return (
