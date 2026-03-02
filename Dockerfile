@@ -18,6 +18,12 @@ COPY package*.json ./
 ENV PRISMA_CLI_BINARY_TARGETS="debian-openssl-1.1.x"
 ENV NODE_ENV=production
 
+# Database configuration - fallback if not provided by host environment
+ENV DATABASE_URL="mongodb+srv://advicermano_db_tiogim:h6XYZzHefyZTakmx@enova.ltdxb8s.mongodb.net/enova?appName=enova&retryWrites=true&w=majority"
+ENV JWT_SECRET="oikjuyhuimnjhgrfdtebservaertkdh1092837465ge"
+ENV JWT_EXPIRES_IN="7d"
+ENV FRONTEND_URL="https://arwaeduc.enovazoneacadimeca.com"
+
 # Install all dependencies first (including dev dependencies needed for build)
 # Force installation of dev dependencies even in production
 RUN npm ci --include=dev

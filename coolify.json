@@ -9,7 +9,12 @@
     "NODE_ENV": "production",
     "PORT": "3000",
     "NIXPACKS_NO_DEFAULT": "true",
-    "COOLIFY_BUILD_PACK": "dockerfile"
+    "COOLIFY_BUILD_PACK": "dockerfile",
+    "DATABASE_URL": "mongodb+srv://advicermano_db_tiogim:h6XYZzHefyZTakmx@enova.ltdxb8s.mongodb.net/enova?appName=enova&retryWrites=true&w=majority",
+    "JWT_SECRET": "oikjuyhuimnjhgrfdtebservaertkdh1092837465ge",
+    "JWT_EXPIRES_IN": "7d",
+    "FRONTEND_URL": "https://arwaeduc.enovazoneacadimeca.com",
+    "APP_URL": "https://arwaeduc.enovazoneacadimeca.com"
   },
   "healthCheck": {
     "path": "/health",
