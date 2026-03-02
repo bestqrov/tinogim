@@ -69,7 +69,7 @@ export default function RecuPage() {
 
     const [formData, setFormData] = useState(initialFormState);
     const [schoolProfile, setSchoolProfile] = useState({
-        schoolName: 'INSTITUT INJAHI',
+        schoolName: 'Enovazone Acadimica',
         address: 'Ouarzazate, Maroc',
         phone: '+212639-728327',
         logo: null as string | null
@@ -103,7 +103,7 @@ export default function RecuPage() {
             try {
                 const profile = JSON.parse(savedProfile);
                 setSchoolProfile({
-                    schoolName: profile.schoolName || 'INSTITUT INJAHI',
+                    schoolName: profile.schoolName || 'Enovazone Acadimica',
                     address: profile.address || 'Ouarzazate, Maroc',
                     phone: profile.phone || '+212639-728327',
                     logo: profile.logo || profile.logoUrl || null

@@ -343,7 +343,7 @@ export default function SoutienInscriptionForm({ onSuccess, onSuccessRedirect }:
                                     <span>ROYAUME DU MAROC</span>
                                 </div>
                                 <h2 className="font-bold text-lg text-gray-800">MINISTERE D'EDUCATION NATIONALE</h2>
-                                <h1 className="font-bold text-3xl tracking-wider text-green-700">INSTITUT INJAHI</h1>
+                                <h1 className="font-bold text-3xl tracking-wider text-green-700">Enovazone Acadimica</h1>
                                 <div className="mt-4 inline-block border-2 border-green-600 px-6 py-3 font-bold text-lg bg-green-50 rounded-lg">
                                     FICHE DE RENSEIGNEMENTS INDIVIDUEL
                                 </div>

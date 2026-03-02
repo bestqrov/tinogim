@@ -12,7 +12,7 @@ export interface SchoolProfile {
 
 export function useSchoolProfile() {
     const [profile, setProfile] = useState<SchoolProfile>({
-        schoolName: 'INSTITUT INJAHI', // Default
+        schoolName: 'Enovazone Acadimica', // Default
         logo: null
     });
     const [loading, setLoading] = useState(true);
@@ -24,7 +24,7 @@ export function useSchoolProfile() {
                 const parsed = JSON.parse(savedProfile);
                 setProfile({
                     ...parsed,
-                    schoolName: parsed.schoolName || 'INSTITUT INJAHI',
+                    schoolName: parsed.schoolName || 'Enovazone Acadimica',
                     logo: parsed.logo || parsed.logoUrl || null // Handle both legacy keys
                 });
             }
