@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import Button from '@/components/Button';
+import ThermalReceipt from '@/components/ThermalReceipt';
 import {
     PlusCircle,
     Edit,
@@ -219,80 +220,112 @@ export default function RecuPage() {
 
         const currentDate = new Date(receipt.date).toLocaleDateString('fr-FR');
         const currentTime = receipt.time || new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-        const items = receipt.items.map(item =>
-            `<div class="flex"><span>${item.description}</span><span>${item.amount.toFixed(2)} MAD</span></div>`
-        ).join('');
-
+        const remaining = receipt.totalAmount - receipt.amountPaid;
         printWindow.document.write(`
             <!DOCTYPE html>
             <html>
             <head>
+                <meta charset="UTF-8" />
                 <title>Reçu - ${receipt.receiptNumber}</title>
                 <style>
                     @page { size: 80mm auto; margin: 0; }
+                    * { box-sizing: border-box; margin: 0; padding: 0; }
                     body {
-                        font-family: monospace;
+                        font-family: 'Courier New', Courier, monospace;
                         font-size: 12px;
                         width: 80mm;
-                        margin: 0;
-                        padding: 10mm;
+                        color: #111;
+                        background: #fff;
+                        padding: 10mm 6mm;
+                        line-height: 1.6;
                     }
-                    .center { text-align: center; }
-                    .bold { font-weight: bold; }
-                    .header { font-size: 18px; margin-bottom: 5px; }
-                    .small { font-size: 10px; }
-                    .medium { font-size: 11px; }
-                    .title { font-size: 14px; margin: 15px 0; }
-                    .dashed { border-top: 1px dashed #000; margin: 10px 0; }
-                    .flex { display: flex; justify-content: space-between; }
-                    .mt-20 { margin-top: 20px; }
+                    .center  { text-align: center; }
+                    .bold    { font-weight: bold; }
+                    .right   { text-align: right; }
+                    .hr      { border: none; border-top: 2px solid #000; margin: 7px 0; }
+                    .hr-dot  { border: none; border-top: 1px dashed #666; margin: 6px 0; }
+                    .flex    { display: flex; justify-content: space-between; align-items: baseline; }
+                    .tiny    { font-size: 9px; color: #555; }
+                    .sm      { font-size: 10px; }
+                    .md      { font-size: 11px; }
+                    .lg      { font-size: 14px; }
+                    .xl      { font-size: 15px; letter-spacing: 1.5px; text-transform: uppercase; }
+                    .label   { font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; font-weight: bold; margin-bottom: 3px; }
+                    .red     { color: #b91c1c; }
+                    .green   { color: #15803d; }
+                    .nowrap  { white-space: nowrap; margin-left: 6px; }
                 </style>
             </head>
             <body>
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-                    ${schoolProfile.logo ? `<img src="${schoolProfile.logo}" style="width: 50px; height: 50px; object-fit: contain;" />` : ''}
-                    <div style="text-align: center; flex: 1;">
-                        <div class="header bold">${schoolProfile.schoolName}</div>
-                        <div class="small">${schoolProfile.address}</div>
-                        <div class="small">Tel: ${schoolProfile.phone}</div>
+                <!-- HEADER -->
+                <div class="center" style="margin-bottom:10px">
+                    ${schoolProfile.logo ? `<img src="${schoolProfile.logo}" style="width:56px;height:56px;object-fit:contain;display:block;margin:0 auto 4px" />` : ''}
+                    <div class="xl bold">${schoolProfile.schoolName}</div>
+                    <div class="sm" style="margin-top:2px">${schoolProfile.address}</div>
+                    ${schoolProfile.phone ? `<div class="sm">Tél : ${schoolProfile.phone}</div>` : ''}
+                </div>
+
+                <!-- TITLE -->
+                <div class="center bold lg" style="text-transform:uppercase;letter-spacing:1px">
+                    ★&nbsp; REÇU DE ${receipt.receiptType.toUpperCase()} &nbsp;★
+                </div>
+                <div class="hr"></div>
+
+                <!-- META -->
+                <div class="flex md" style="margin-bottom:3px">
+                    <span>Date : <strong>${currentDate}</strong></span>
+                    <span>Heure : <strong>${currentTime}</strong></span>
+                </div>
+                <div class="md" style="margin-bottom:6px">Reçu No : <strong>${receipt.receiptNumber}</strong></div>
+                <div class="hr-dot"></div>
+
+                <!-- CLIENT -->
+                <div style="margin-bottom:6px">
+                    <div class="label">▸ Informations client</div>
+                    <div class="md">Nom &nbsp;&nbsp;&nbsp;&nbsp;: <strong>${receipt.issuedTo}</strong></div>
+                    ${receipt.phoneNumber ? `<div class="md">Tél &nbsp;&nbsp;&nbsp;&nbsp;: ${receipt.phoneNumber}</div>` : ''}
+                    <div class="md">Paiement : <strong>${receipt.paymentMethod === 'Cash' ? 'Espèces' : 'Chèque'}</strong></div>
+                    ${receipt.paymentMethod === 'Check' && receipt.checkNumber ? `<div class="md">Chèque No: <strong>${receipt.checkNumber}</strong></div>` : ''}
+                </div>
+                <div class="hr-dot"></div>
+
+                <!-- ITEMS -->
+                <div class="flex bold sm label" style="border-bottom:1px solid #000;padding-bottom:3px;margin-bottom:4px">
+                    <span>DÉSIGNATION</span><span>MONTANT</span>
+                </div>
+                ${receipt.items.map((item: any) => `
+                    <div class="flex md" style="margin-bottom:3px">
+                        <span style="max-width:175px;word-break:break-word">${item.description || '—'}</span>
+                        <span class="nowrap">${item.amount.toFixed(2)} MAD</span>
+                    </div>`).join('')}
+                <div class="hr"></div>
+
+                <!-- TOTALS -->
+                <div style="margin-bottom:6px">
+                    <div class="flex md" style="margin-bottom:3px">
+                        <span>Sous-total</span><span>${receipt.totalAmount.toFixed(2)} MAD</span>
+                    </div>
+                    <div class="flex md" style="margin-bottom:3px">
+                        <span>Montant payé</span><span><strong>${receipt.amountPaid.toFixed(2)} MAD</strong></span>
+                    </div>
+                    <div class="hr-dot"></div>
+                    <div class="flex bold lg">
+                        <span>RESTE DÛ</span>
+                        <span class="${remaining > 0 ? 'red' : 'green'}">${remaining.toFixed(2)} MAD</span>
                     </div>
                 </div>
-                
-                <div class="center title bold">Reçu de ${receipt.receiptType}</div>
-                <div class="dashed"></div>
-                
-                <div class="flex medium">
-                    <span>Date: ${currentDate} ${currentTime}</span>
-                    <span>No: ${receipt.receiptNumber}</span>
+
+                ${receipt.notes ? `
+                <div class="hr-dot"></div>
+                <div class="sm" style="font-style:italic;margin-bottom:6px"><strong>Note :</strong> ${receipt.notes}</div>` : ''}
+
+                <!-- FOOTER -->
+                <div class="hr"></div>
+                <div class="center">
+                    <div class="bold sm" style="margin-bottom:2px">شكراً لثقتكم — Merci de votre confiance</div>
+                    <div class="sm">${schoolProfile.schoolName}</div>
+                    <div class="tiny" style="margin-top:6px">— Document généré le ${new Date().toLocaleDateString('fr-FR')} —</div>
                 </div>
-                <div class="dashed"></div>
-                
-                <div class="medium">
-                    <div>Client: ${receipt.issuedTo}</div>
-                    <div>Tel: ${receipt.phoneNumber || 'N/A'}</div>
-                    <div>Paiement: ${receipt.paymentMethod}</div>
-                    ${receipt.paymentMethod === 'Check' && receipt.checkNumber ? `<div>Chèque No: ${receipt.checkNumber}</div>` : ''}
-                </div>
-                <div class="dashed"></div>
-                
-                <div class="flex bold medium">
-                    <span>Description</span>
-                    <span>Montant</span>
-                </div>
-                <div class="dashed"></div>
-                
-                <div class="medium">
-                    ${items}
-                </div>
-                <div class="dashed"></div>
-                
-                <div class="medium">
-                    <div class="flex"><span>Total:</span><span class="bold">${receipt.totalAmount.toFixed(2)} MAD</span></div>
-                    <div class="flex"><span>Payé:</span><span class="bold">${receipt.amountPaid.toFixed(2)} MAD</span></div>
-                    <div class="flex"><span>Reste:</span><span class="bold">${(receipt.totalAmount - receipt.amountPaid).toFixed(2)} MAD</span></div>
-                </div>
-                
-                <div class="center medium mt-20">${schoolProfile.schoolName} vous remercie pour votre paiement!</div>
             </body>
             </html>
         `);
@@ -945,74 +978,26 @@ export default function RecuPage() {
                                 </button>
                             </div>
 
-                            <div className="overflow-y-auto p-8 bg-gray-100 flex justify-center">
-                                <div className="bg-white p-4 shadow-sm text-black font-mono text-sm w-[300px]" style={{ fontFamily: '"Courier New", Courier, monospace' }}>
-                                    <div className="flex items-center gap-2 mb-4">
-                                        {schoolProfile.logo && (
-                                            <img src={schoolProfile.logo} alt="Logo" className="w-12 h-12 object-contain" />
-                                        )}
-                                        <div className="flex-1 text-center">
-                                            <div className="font-bold mb-1">{schoolProfile.schoolName}</div>
-                                            <div className="text-xs mb-1">{schoolProfile.address}</div>
-                                            <div className="text-xs">Tel: {schoolProfile.phone}</div>
-                                        </div>
-                                    </div>
-
-                                    <div className="text-center font-bold text-base mb-2">Reçu de {viewingReceipt.receiptType}</div>
-
-                                    <div className="border-b border-dashed border-black my-2"></div>
-
-                                    <div className="flex justify-between text-xs">
-                                        <span>Date: {new Date(viewingReceipt.date).toLocaleDateString('fr-FR')} {viewingReceipt.time || ''}</span>
-                                        <span>No: {viewingReceipt.receiptNumber}</span>
-                                    </div>
-
-                                    <div className="border-b border-dashed border-black my-2"></div>
-
-                                    <div className="text-xs space-y-1">
-                                        <div>Client: {viewingReceipt.issuedTo}</div>
-                                        <div>Tel: {viewingReceipt.phoneNumber || 'N/A'}</div>
-                                        <div>Paiement: {viewingReceipt.paymentMethod}</div>
-                                        {viewingReceipt.paymentMethod === 'Check' && viewingReceipt.checkNumber && (
-                                            <div>Chèque No: {viewingReceipt.checkNumber}</div>
-                                        )}
-                                    </div>
-
-                                    <div className="border-b border-dashed border-black my-2"></div>
-
-                                    <div className="flex justify-between font-bold text-xs mb-1">
-                                        <span>Description</span>
-                                        <span>Montant</span>
-                                    </div>
-                                    <div className="border-b border-dashed border-black mb-2"></div>
-
-                                    <div className="space-y-1 mb-2">
-                                        {viewingReceipt.items.map((item, i) => (
-                                            <div key={i} className="flex justify-between text-xs">
-                                                <span>{item.description}</span>
-                                                <span>{item.amount.toFixed(2)} MAD</span>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    <div className="border-b border-dashed border-black my-2"></div>
-
-                                    <div className="text-xs space-y-1">
-                                        <div className="flex justify-between">
-                                            <span>Total:</span>
-                                            <span className="font-bold">{viewingReceipt.totalAmount.toFixed(2)} MAD</span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                            <span>Payé:</span>
-                                            <span className="font-bold">{viewingReceipt.amountPaid.toFixed(2)} MAD</span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                            <span>Reste:</span>
-                                            <span className="font-bold">{(viewingReceipt.totalAmount - viewingReceipt.amountPaid).toFixed(2)} MAD</span>
-                                        </div>
-                                    </div>
-
-                                    <div className="text-center text-xs mt-6 mb-2">{schoolProfile.schoolName} vous remercie pour votre paiement!</div>
+                            <div className="overflow-y-auto p-6 bg-gray-100 flex justify-center">
+                                <div className="shadow-lg rounded" style={{ border: '1px solid #d1d5db' }}>
+                                    <ThermalReceipt
+                                        schoolName={schoolProfile.schoolName}
+                                        address={schoolProfile.address}
+                                        phone={schoolProfile.phone}
+                                        logo={schoolProfile.logo}
+                                        receiptNumber={viewingReceipt.receiptNumber}
+                                        date={viewingReceipt.date}
+                                        time={viewingReceipt.time}
+                                        issuedTo={viewingReceipt.issuedTo}
+                                        phoneNumber={viewingReceipt.phoneNumber}
+                                        receiptType={viewingReceipt.receiptType}
+                                        paymentMethod={viewingReceipt.paymentMethod}
+                                        checkNumber={viewingReceipt.checkNumber}
+                                        items={viewingReceipt.items}
+                                        totalAmount={viewingReceipt.totalAmount}
+                                        amountPaid={viewingReceipt.amountPaid}
+                                        notes={viewingReceipt.notes}
+                                    />
                                 </div>
                             </div>
 
