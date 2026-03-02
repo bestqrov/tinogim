@@ -1,12 +1,7 @@
 'use client';
 
-// Required for Next.js static export with dynamic routes
-export function generateStaticParams() {
-    return [];
-}
-
-import { useState, useEffect, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import {
     User, Mail, Phone, BookOpen, GraduationCap, Users, Calendar,
     Clock, CheckCircle2, XCircle, ChevronRight, ArrowLeft,
@@ -68,11 +63,11 @@ const DAYS_FR: Record<string, string> = {
     'Wednesday': 'Mercredi', 'Thursday': 'Jeudi', 'Friday': 'Vendredi', 'Saturday': 'Samedi',
 };
 
-// ─── Main Component ────────────────────────────────────────────────
-export default function TeacherDashboard() {
-    const params = useParams();
+// ─── Dashboard inner component (uses useSearchParams) ─────────────
+function TeacherDashboardInner() {
+    const searchParams = useSearchParams();
     const router = useRouter();
-    const teacherId = params.id as string;
+    const teacherId = searchParams.get('id') || '';
 
     const [teacher, setTeacher] = useState<TeacherDetail | null>(null);
     const [loading, setLoading] = useState(true);
@@ -93,11 +88,11 @@ export default function TeacherDashboard() {
     const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
     const load = useCallback(async () => {
+        if (!teacherId) return;
         setLoading(true);
         try {
             const data = await teachersService.getById(teacherId) as unknown as TeacherDetail;
             setTeacher(data);
-            // Load notifications from localStorage
             const stored = localStorage.getItem(`teacher_notifications_${teacherId}`);
             if (stored) setNotifications(JSON.parse(stored));
         } catch (e) {
@@ -109,23 +104,17 @@ export default function TeacherDashboard() {
 
     useEffect(() => { load(); }, [load]);
 
-    // When group changes, pre-load existing attendance for selected date
     useEffect(() => {
         if (!selectedGroup || !attendanceDate || !teacher) return;
         const grp = teacher.groups.find(g => g.id === selectedGroup);
         if (!grp) return;
-        setAttendanceDate(attendanceDate);
-        // Default all to present
         const map: Record<string, 'present' | 'absent'> = {};
         grp.students.forEach(s => { map[s.id] = 'present'; });
         setAttendanceMap(map);
-        // Try to load existing attendance for this group+date
         getAttendanceByGroup(selectedGroup, attendanceDate).then(res => {
             if (res?.attendances?.length) {
                 const fresh: Record<string, 'present' | 'absent'> = { ...map };
-                res.attendances.forEach((a: any) => {
-                    fresh[a.studentId] = a.status;
-                });
+                res.attendances.forEach((a: any) => { fresh[a.studentId] = a.status; });
                 setAttendanceMap(fresh);
             }
         }).catch(() => {});
@@ -181,6 +170,18 @@ export default function TeacherDashboard() {
         });
     };
 
+    if (!teacherId) return (
+        <div className="flex items-center justify-center h-96">
+            <div className="text-center">
+                <User size={48} className="mx-auto text-gray-300 mb-4" />
+                <p className="text-gray-500 text-lg font-medium">ID enseignant manquant</p>
+                <button onClick={() => router.push('/admin/teachers')} className="mt-4 text-amber-500 hover:underline flex items-center gap-1 mx-auto">
+                    <ArrowLeft size={16} /> Retour
+                </button>
+            </div>
+        </div>
+    );
+
     if (loading) return (
         <div className="flex items-center justify-center h-96">
             <div className="flex flex-col items-center gap-4">
@@ -195,7 +196,7 @@ export default function TeacherDashboard() {
             <div className="text-center">
                 <User size={48} className="mx-auto text-gray-300 mb-4" />
                 <p className="text-gray-500 text-lg font-medium">Enseignant introuvable</p>
-                <button onClick={() => router.back()} className="mt-4 text-amber-500 hover:underline flex items-center gap-1 mx-auto">
+                <button onClick={() => router.push('/admin/teachers')} className="mt-4 text-amber-500 hover:underline flex items-center gap-1 mx-auto">
                     <ArrowLeft size={16} /> Retour
                 </button>
             </div>
@@ -231,7 +232,6 @@ export default function TeacherDashboard() {
                 </div>
 
                 <div className="px-6 pb-6 flex flex-col lg:flex-row items-start lg:items-center gap-6">
-                    {/* Avatar */}
                     <div className="relative">
                         <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center text-white font-black text-2xl shadow-xl shadow-amber-500/30">
                             {initials}
@@ -239,7 +239,6 @@ export default function TeacherDashboard() {
                         <span className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-[#1e293b] ${teacher.status === 'Active' ? 'bg-emerald-400' : 'bg-gray-400'}`} />
                     </div>
 
-                    {/* Info */}
                     <div className="flex-1">
                         <h1 className="text-2xl font-black text-white">{teacher.name}</h1>
                         <div className="flex flex-wrap items-center gap-2 mt-2">
@@ -252,7 +251,6 @@ export default function TeacherDashboard() {
                         </div>
                     </div>
 
-                    {/* Stats */}
                     <div className="flex gap-4">
                         {[
                             { label: 'Groupes', value: teacher._count.groups, icon: Layers, color: 'text-purple-300' },
@@ -268,7 +266,6 @@ export default function TeacherDashboard() {
                     </div>
                 </div>
 
-                {/* Tabs */}
                 <div className="flex overflow-x-auto scrollbar-hide">
                     {tabs.map(tab => (
                         <button
@@ -292,13 +289,11 @@ export default function TeacherDashboard() {
                 </div>
             </div>
 
-            {/* Content */}
             <div className="p-6 max-w-6xl mx-auto">
 
                 {/* ── PROFIL ── */}
                 {activeTab === 'profil' && (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        {/* Personal Info */}
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                             <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-5">Informations personnelles</h3>
                             <div className="space-y-4">
@@ -324,7 +319,6 @@ export default function TeacherDashboard() {
                         </div>
 
                         <div className="space-y-6">
-                            {/* Professional Info */}
                             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                                 <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-5">Informations professionnelles</h3>
                                 <div className="space-y-4">
@@ -360,7 +354,6 @@ export default function TeacherDashboard() {
                                 </div>
                             </div>
 
-                            {/* Specialties & Levels */}
                             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                                 <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Matières &amp; Niveaux</h3>
                                 <div className="mb-3">
@@ -420,7 +413,6 @@ export default function TeacherDashboard() {
                                     </div>
                                 </button>
 
-                                {/* Horaires */}
                                 {grp.timeSlots && grp.timeSlots.length > 0 && (
                                     <div className="px-5 py-2 bg-gray-50 border-t border-gray-100 flex flex-wrap gap-2">
                                         {grp.timeSlots.map((slot, i) => (
@@ -486,7 +478,6 @@ export default function TeacherDashboard() {
                 {/* ── PRÉSENCE ── */}
                 {activeTab === 'presence' && (
                     <div className="space-y-6">
-                        {/* Controls */}
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
                             <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Saisir une feuille de présence</h3>
                             <div className="flex flex-col sm:flex-row gap-4">
@@ -522,7 +513,6 @@ export default function TeacherDashboard() {
                             </div>
                         )}
 
-                        {/* Attendance Sheet */}
                         {selectedGroup && (() => {
                             const grp = teacher.groups.find(g => g.id === selectedGroup);
                             if (!grp) return null;
@@ -530,7 +520,6 @@ export default function TeacherDashboard() {
                             const absentCount = grp.students.length - presentCount;
                             return (
                                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                                    {/* Sheet Header */}
                                     <div className="p-5 border-b border-gray-100 flex items-center justify-between">
                                         <div>
                                             <h4 className="font-bold text-gray-800">{grp.name}</h4>
@@ -540,14 +529,9 @@ export default function TeacherDashboard() {
                                         </div>
                                         <div className="flex items-center gap-4">
                                             <div className="flex gap-3 text-sm">
-                                                <span className="flex items-center gap-1.5 font-bold text-emerald-600">
-                                                    <CheckCircle2 size={16} /> {presentCount}
-                                                </span>
-                                                <span className="flex items-center gap-1.5 font-bold text-red-500">
-                                                    <XCircle size={16} /> {absentCount}
-                                                </span>
+                                                <span className="flex items-center gap-1.5 font-bold text-emerald-600"><CheckCircle2 size={16} /> {presentCount}</span>
+                                                <span className="flex items-center gap-1.5 font-bold text-red-500"><XCircle size={16} /> {absentCount}</span>
                                             </div>
-                                            {/* Mark all buttons */}
                                             <button
                                                 onClick={() => {
                                                     const all: Record<string, 'present' | 'absent'> = {};
@@ -561,7 +545,6 @@ export default function TeacherDashboard() {
                                         </div>
                                     </div>
 
-                                    {/* Students list */}
                                     {grp.students.length === 0 ? (
                                         <div className="p-10 text-center text-gray-400">Aucun élève dans ce groupe</div>
                                     ) : (
@@ -621,7 +604,6 @@ export default function TeacherDashboard() {
                 {/* ── COURS & EXAMENS ── */}
                 {activeTab === 'cours' && (
                     <div className="space-y-6">
-                        {/* Weekly Schedule */}
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                             <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-5">Planning hebdomadaire</h3>
                             {teacher.groups.length === 0 ? (
@@ -631,8 +613,8 @@ export default function TeacherDashboard() {
                                     {teacher.groups.flatMap(grp =>
                                         (grp.timeSlots || []).map((slot, i) => ({ ...slot, grp, key: `${grp.id}-${i}` }))
                                     ).sort((a, b) => a.startTime.localeCompare(b.startTime)).map(item => (
-                                        <div key={item.key} className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-amber-200 hover:bg-amber-50/30 transition-all group">
-                                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center flex-shrink-0 shadow-sm shadow-amber-300/30">
+                                        <div key={item.key} className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-amber-200 hover:bg-amber-50/30 transition-all">
+                                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center flex-shrink-0">
                                                 <Calendar size={20} className="text-white" />
                                             </div>
                                             <div className="flex-1">
@@ -646,7 +628,7 @@ export default function TeacherDashboard() {
                                                 <p className="font-bold text-amber-600">{DAYS_FR[item.day] || item.day}</p>
                                                 <p className="text-sm text-gray-500">{item.startTime} — {item.endTime}</p>
                                             </div>
-                                            <span className={`ml-2 px-2 py-1 rounded-full text-xs font-bold ${item.grp.type === 'FORMATION' ? 'bg-purple-100 text-purple-600' : 'bg-blue-100 text-blue-600'}`}>
+                                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${item.grp.type === 'FORMATION' ? 'bg-purple-100 text-purple-600' : 'bg-blue-100 text-blue-600'}`}>
                                                 {item.grp.type === 'FORMATION' ? 'Formation' : 'Soutien'}
                                             </span>
                                         </div>
@@ -655,7 +637,6 @@ export default function TeacherDashboard() {
                             )}
                         </div>
 
-                        {/* Groups Overview */}
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                             <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-5">Récapitulatif des cours</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -669,18 +650,9 @@ export default function TeacherDashboard() {
                                         <div key={grp.id} className={`p-4 rounded-xl border-2 ${grp.type === 'FORMATION' ? 'border-purple-100 bg-purple-50' : 'border-blue-100 bg-blue-50'}`}>
                                             <p className="font-bold text-gray-800 text-sm mb-2">{grp.name}</p>
                                             <div className="space-y-1.5 text-xs text-gray-600">
-                                                <div className="flex justify-between">
-                                                    <span>Élèves</span>
-                                                    <span className="font-bold text-gray-800">{grp._count.students}</span>
-                                                </div>
-                                                <div className="flex justify-between">
-                                                    <span>Séances/sem.</span>
-                                                    <span className="font-bold text-gray-800">{grp.timeSlots?.length || 0}</span>
-                                                </div>
-                                                <div className="flex justify-between">
-                                                    <span>Heures/sem.</span>
-                                                    <span className="font-bold text-amber-600">{hoursPerWeek.toFixed(1)}h</span>
-                                                </div>
+                                                <div className="flex justify-between"><span>Élèves</span><span className="font-bold text-gray-800">{grp._count.students}</span></div>
+                                                <div className="flex justify-between"><span>Séances/sem.</span><span className="font-bold text-gray-800">{grp.timeSlots?.length || 0}</span></div>
+                                                <div className="flex justify-between"><span>Heures/sem.</span><span className="font-bold text-amber-600">{hoursPerWeek.toFixed(1)}h</span></div>
                                             </div>
                                         </div>
                                     );
@@ -693,7 +665,6 @@ export default function TeacherDashboard() {
                 {/* ── NOTIFICATIONS ── */}
                 {activeTab === 'notifications' && (
                     <div className="space-y-6">
-                        {/* Compose */}
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
                             <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">
                                 <Megaphone size={14} className="inline mr-2 text-amber-500" />
@@ -718,7 +689,6 @@ export default function TeacherDashboard() {
                             </div>
                         </div>
 
-                        {/* Messages list */}
                         <div className="space-y-3">
                             {notifications.length === 0 ? (
                                 <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
@@ -756,5 +726,18 @@ export default function TeacherDashboard() {
 
             </div>
         </div>
+    );
+}
+
+// ─── Page export (wrapped in Suspense for useSearchParams) ─────────
+export default function TeacherDashboardPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex items-center justify-center h-96">
+                <div className="w-12 h-12 border-4 border-amber-400 border-t-transparent rounded-full animate-spin" />
+            </div>
+        }>
+            <TeacherDashboardInner />
+        </Suspense>
     );
 }

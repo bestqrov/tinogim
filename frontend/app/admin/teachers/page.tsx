@@ -294,7 +294,7 @@ const TeachersContent = () => {
                         </div>
 
                         <button
-                            onClick={() => router.push(`/admin/teachers/${teacher.id}`)}
+                            onClick={() => router.push(`/admin/teachers/dashboard?id=${teacher.id}`)}
                             className="mt-3 w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-black font-bold text-sm transition-all shadow-sm shadow-amber-300/30"
                         >
                             <LayoutDashboard size={15} />
