@@ -28,8 +28,24 @@ COPY . .
 # Generate Prisma Client
 RUN npx prisma generate
 
-# Build the complete application (backend + frontend)
-RUN npm run build:full
+# Build backend first
+RUN npm run build:backend
+
+# Build frontend with explicit verification
+RUN echo "🔨 Starting frontend build..." && \
+    cd frontend && \
+    npm ci --include=dev && \
+    npm run build && \
+    echo "✅ Frontend build completed" && \
+    ls -la dist/ && \
+    echo "📄 Frontend index.html:" && \
+    ls -la dist/index.html
+
+# Verify the complete application build
+RUN echo "🔍 Verifying final build structure:" && \
+    ls -la /app/ && \
+    echo "Frontend dist:" && \
+    ls -la /app/frontend/dist/
 
 # Now safely remove development dependencies to reduce image size
 RUN npm prune --production && npm cache clean --force
@@ -39,8 +55,17 @@ RUN echo "📁 Frontend directory contents:" && ls -la /app/frontend/ || echo "N
 RUN echo "📁 Frontend dist contents:" && ls -la /app/frontend/dist/ || echo "No frontend/dist directory"
 RUN echo "📁 App directory contents:" && ls -la /app/
 
-# Remove frontend source files but keep dist
-RUN rm -rf /app/frontend/src /app/frontend/app /app/frontend/components /app/frontend/node_modules || true
+# Remove frontend source files but keep dist - be more specific to avoid accidents
+RUN rm -rf /app/frontend/src || true
+RUN rm -rf /app/frontend/app || true 
+RUN rm -rf /app/frontend/components || true
+RUN rm -rf /app/frontend/hooks || true
+RUN rm -rf /app/frontend/lib || true
+RUN rm -rf /app/frontend/store || true
+RUN rm -rf /app/frontend/types || true
+RUN rm -rf /app/frontend/utils || true
+RUN rm -rf /app/frontend/node_modules || true
+RUN rm -rf /app/frontend/.next || true
 
 # Final verification after cleanup
 RUN echo "📁 After cleanup - Frontend dist:" && ls -la /app/frontend/dist/ || echo "Frontend dist not found after cleanup"
