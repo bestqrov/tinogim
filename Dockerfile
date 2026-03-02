@@ -19,7 +19,8 @@ ENV PRISMA_CLI_BINARY_TARGETS="debian-openssl-1.1.x"
 ENV NODE_ENV=production
 
 # Install all dependencies first (including dev dependencies needed for build)
-RUN npm ci
+# Force installation of dev dependencies even in production
+RUN npm ci --include=dev
 
 # Copy the rest of the application code
 COPY . .
@@ -36,7 +37,7 @@ RUN npm prune --production && npm cache clean --force
 # Remove frontend node_modules to save space (not needed for backend-only)
 RUN rm -rf /app/frontend/node_modules || true
 
-# Remove source TypeScript files to save space
+# Remove source TypeScript files and config after successful build
 RUN rm -rf /app/src /app/tsconfig.json || true
 
 # Expose the port the app runs on

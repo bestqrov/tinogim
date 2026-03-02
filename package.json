@@ -9,8 +9,8 @@
   },
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "build": "npm run prisma:generate && tsc && npm run build:frontend",
-    "build:backend": "npm run prisma:generate && tsc",
+    "build": "npm run prisma:generate && npx tsc && npm run build:frontend",
+    "build:backend": "npm run prisma:generate && npx tsc",
     "build:frontend": "cd frontend && npm ci && npm run build",
     "build:full": "npm run build:backend && npm run build:frontend",
     "start": "node dist/server.js",
