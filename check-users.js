@@ -4,7 +4,7 @@ async function checkAndCreateUsers() {
     try {
         // First, try to login as admin to get a token
         console.log('Attempting to login as admin...');
-        const loginResponse = await axios.post('http://localhost:3000/auth/login', {
+        const loginResponse = await axios.post('http://localhost:3000/api/auth/login', {
             email: 'admin@injahi.com',
             password: 'admin123'
         });
@@ -14,7 +14,7 @@ async function checkAndCreateUsers() {
 
         // Fetch all users
         console.log('\nFetching all users...');
-        const usersResponse = await axios.get('http://localhost:3000/users', {
+        const usersResponse = await axios.get('http://localhost:3000/api/users', {
             headers: { Authorization: `Bearer ${token}` }
         });
 

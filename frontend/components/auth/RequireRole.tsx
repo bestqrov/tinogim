@@ -20,11 +20,14 @@ export function RequireRole({ children, allowedRoles }: RequireRoleProps) {
             if (!isAuthenticated) {
                 router.push('/login');
             } else if (user && !allowedRoles.includes(user.role) && user.role !== 'SUPER_ADMIN') {
+                // Only redirect if user role is NOT in allowed roles
                 // Redirect to appropriate dashboard
                 if (user.role === 'ADMIN') {
                     router.push('/admin');
                 } else if (user.role === 'SECRETARY') {
                     router.push('/secretary');
+                } else {
+                    router.push('/login');
                 }
             }
         }

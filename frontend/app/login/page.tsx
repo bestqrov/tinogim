@@ -38,13 +38,8 @@ export default function LoginPage() {
         <div className="h-screen flex flex-col lg:flex-row bg-white font-sans text-slate-900 overflow-hidden">
             {/* Left Column: Branded Visual Section (Fixed height/width) */}
             <div className="hidden lg:flex lg:w-1/2 h-full relative bg-slate-900 items-center justify-center p-12 overflow-hidden group shrink-0">
-                {/* Background Banner with deep overlay */}
+                {/* Background with gradient overlay */}
                 <div className="absolute inset-0 z-0">
-                    <img
-                        src="/assets/glaf.jpg"
-                        alt="Institut Injahi"
-                        className="w-full h-full object-cover opacity-20 transform group-hover:scale-110 transition-transform duration-[20s] ease-out mix-blend-luminosity"
-                    />
                     <div className="absolute inset-0 bg-gradient-to-tr from-indigo-950 via-slate-900/95 to-slate-900/90"></div>
                 </div>
 
@@ -78,14 +73,7 @@ export default function LoginPage() {
             <div className="w-full lg:w-1/2 h-screen flex flex-col px-8 sm:px-16 lg:px-24 py-4 lg:py-8 bg-white relative z-10 border-l border-slate-50 shadow-[-50px_0_100px_-50px_rgba(0,0,0,0.05)] overflow-y-auto lg:overflow-hidden custom-scrollbar">
                 <div className="max-w-md w-full mx-auto flex flex-col h-full">
 
-                    {/* Top Section: Banner */}
-                    <div className="shrink-0 mb-4 lg:mb-6 animate-in fade-in slide-in-from-top-6 duration-700">
-                        <div className="rounded-[2.5rem] overflow-hidden shadow-[0_15px_45px_rgba(0,0,0,0.08)] border-[3px] border-slate-50 transform hover:scale-[1.01] transition-all duration-500">
-                            <img src="/assets/glaf.jpg" alt="Institut Injahi" className="w-full h-auto max-h-[160px] object-cover" />
-                        </div>
-                    </div>
-
-                    {/* Middle Section: Header & Form (Grows to fill space) */}
+                    {/* Header & Form Section */}
                     <div className="flex-1 flex flex-col justify-center min-h-0">
                         {/* Welcome Header */}
                         <div className="mb-6 lg:mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">

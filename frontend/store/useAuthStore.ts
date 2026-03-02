@@ -38,7 +38,7 @@ if (typeof window !== 'undefined') {
 export const useAuthStore = create<AuthState>((set, get) => ({
     user: null,
     accessToken: _accessToken,
-    loading: false,
+    loading: !!_accessToken, // Start with loading true if we have a token
     setUser: (u) => set({ user: u }),
     setAccessToken: (t) => { setAccessToken(t); set({ accessToken: t }); },
     login: async (email, password) => {
@@ -59,7 +59,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             const user = data.data?.user || data.user;
 
             setAccessToken(token);
-            set({ user: user, accessToken: token });
+            set({ user: user, accessToken: token, loading: false });
             return { success: true };
         } catch (err: any) {
             console.error('Login error details:', err);
@@ -76,14 +76,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     },
     getMe: async () => {
         try {
+            set({ loading: true });
             const { default: api } = await import('../lib/api');
             const res = await api.get('/auth/me');
             if (res.data.success) {
-                set({ user: res.data.data });
+                set({ user: res.data.data, loading: false });
+            } else {
+                set({ loading: false });
             }
         } catch (err) {
             console.error('Failed to fetch user profile:', err);
             // If fetching profile fails (e.g. 401), logout
+            set({ loading: false });
             get().logout();
         }
     }
