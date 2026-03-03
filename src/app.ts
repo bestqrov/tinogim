@@ -68,7 +68,17 @@ console.log('   - frontendPath:', frontendPath);
 console.log('   - absoluteFrontendPath:', absoluteFrontendPath);
 console.log('   - Exists:', require('fs').existsSync(absoluteFrontendPath));
 
-app.use(express.static(absoluteFrontendPath));
+app.use(express.static(absoluteFrontendPath, {
+    setHeaders: (res, filePath) => {
+        if (filePath.endsWith('.html')) {
+            // Never cache HTML — always fetch fresh so chunk URLs stay current
+            res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        } else if (filePath.includes('/_next/static/')) {
+            // Content-hashed chunks can be cached forever
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        }
+    }
+}));
 
 // Serve static files from public directory (excluding index.html to prevent conflicts)
 const publicPath = path.join(__dirname, '..', 'public');
@@ -98,6 +108,7 @@ app.get('*', (req, res) => {
     try {
         if (require('fs').existsSync(frontendIndex)) {
             console.log('✅ Serving React frontend');
+            res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
             return res.sendFile(frontendIndex);
         } else {
             // List available files in frontend directory for debugging
