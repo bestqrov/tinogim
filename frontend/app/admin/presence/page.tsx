@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Calendar, Printer, Save, CheckCircle2, XCircle, RefreshCw, UserCheck, Users } from 'lucide-react';
+import { Calendar, Printer, Save, CheckCircle2, RefreshCw, UserCheck, Users, Check } from 'lucide-react';
 import { groupsService } from '@/lib/services/groups';
 import { bulkSaveAttendance, getAttendanceByGroup } from '@/lib/services/attendance';
 
@@ -26,7 +26,7 @@ export default function PresencePage() {
     const [groups, setGroups] = useState<Group[]>([]);
     const [selectedGroup, setSelectedGroup] = useState('');
     const [attendanceDate, setAttendanceDate] = useState(() => new Date().toISOString().split('T')[0]);
-    const [attendanceMap, setAttendanceMap] = useState<Record<string, 'present' | 'absent'>>({});
+    const [attendanceMap, setAttendanceMap] = useState<Record<string, boolean>>({});
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
@@ -56,14 +56,14 @@ export default function PresencePage() {
         if (!grp) return;
 
         // Default everyone to present
-        const defaultMap: Record<string, 'present' | 'absent'> = {};
-        grp.students.forEach(s => { defaultMap[s.id] = 'present'; });
+        const defaultMap: Record<string, boolean> = {};
+        grp.students.forEach(s => { defaultMap[s.id] = true; });
         setAttendanceMap(defaultMap);
 
         getAttendanceByGroup(selectedGroup, attendanceDate).then(res => {
             if (res?.attendances?.length) {
                 const fresh = { ...defaultMap };
-                res.attendances.forEach((a: any) => { fresh[a.studentId] = a.status; });
+                res.attendances.forEach((a: any) => { fresh[a.studentId] = a.status === 'present'; });
                 setAttendanceMap(fresh);
             }
         }).catch(() => {});
@@ -77,7 +77,7 @@ export default function PresencePage() {
             await bulkSaveAttendance(grp.students.map(s => ({
                 studentId: s.id,
                 date: attendanceDate,
-                status: attendanceMap[s.id] || 'present',
+                status: attendanceMap[s.id] !== false ? 'present' : 'absent',
             })));
             setSaved(true);
             setTimeout(() => setSaved(false), 3000);
@@ -89,7 +89,7 @@ export default function PresencePage() {
     };
 
     const grp = groups.find(g => g.id === selectedGroup);
-    const presentCount = Object.values(attendanceMap).filter(v => v === 'present').length;
+    const presentCount = Object.values(attendanceMap).filter(Boolean).length;
     const absentCount = grp ? grp.students.length - presentCount : 0;
 
     return (
@@ -188,16 +188,16 @@ export default function PresencePage() {
                             </p>
                         </div>
                         <div className="flex items-center gap-4">
-                            <span className="flex items-center gap-1.5 font-bold text-emerald-600 text-sm"><CheckCircle2 size={16} /> {presentCount} présents</span>
-                            <span className="flex items-center gap-1.5 font-bold text-red-500 text-sm"><XCircle size={16} /> {absentCount} absents</span>
+                            <span className="px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full">{presentCount} présents</span>
+                            <span className="px-3 py-1 bg-red-50 text-red-600 text-xs font-bold rounded-full">{absentCount} absents</span>
                             <button
-                                onClick={() => { const all: Record<string, 'present' | 'absent'> = {}; grp.students.forEach(s => { all[s.id] = 'present'; }); setAttendanceMap(all); }}
+                                onClick={() => { const all: Record<string, boolean> = {}; grp.students.forEach(s => { all[s.id] = true; }); setAttendanceMap(all); }}
                                 className="px-3 py-1.5 bg-emerald-50 text-emerald-600 text-xs font-bold rounded-lg hover:bg-emerald-100 transition-colors print:hidden"
                             >
                                 Tous présents
                             </button>
                             <button
-                                onClick={() => { const all: Record<string, 'present' | 'absent'> = {}; grp.students.forEach(s => { all[s.id] = 'absent'; }); setAttendanceMap(all); }}
+                                onClick={() => { const all: Record<string, boolean> = {}; grp.students.forEach(s => { all[s.id] = false; }); setAttendanceMap(all); }}
                                 className="px-3 py-1.5 bg-red-50 text-red-500 text-xs font-bold rounded-lg hover:bg-red-100 transition-colors print:hidden"
                             >
                                 Tous absents
@@ -211,43 +211,53 @@ export default function PresencePage() {
                             Aucun élève dans ce groupe
                         </div>
                     ) : (
-                        <div className="divide-y divide-gray-50">
-                            {grp.students.map((s, idx) => {
-                                const status = attendanceMap[s.id] || 'present';
-                                return (
-                                    <div key={s.id} className={`flex items-center justify-between px-5 py-3.5 transition-colors ${status === 'present' ? 'bg-white hover:bg-emerald-50/30' : 'bg-red-50/40 hover:bg-red-50'}`}>
-                                        <div className="flex items-center gap-4">
-                                            <span className="text-xs text-gray-300 font-mono w-5 text-center">{idx + 1}</span>
-                                            <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-black shrink-0 ${status === 'present' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-500'}`}>
-                                                {s.name[0]}{s.surname[0]}
-                                            </div>
-                                            <div>
-                                                <p className="font-semibold text-gray-800">{s.name} {s.surname}</p>
-                                                {s.phone && <p className="text-xs text-gray-400">{s.phone}</p>}
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-2 print:hidden">
-                                            <button
-                                                onClick={() => setAttendanceMap(p => ({ ...p, [s.id]: 'present' }))}
-                                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${status === 'present' ? 'bg-emerald-500 text-white shadow-sm' : 'bg-gray-100 text-gray-400 hover:bg-emerald-50 hover:text-emerald-600'}`}
-                                            >
-                                                <CheckCircle2 size={14} /> Présent
-                                            </button>
-                                            <button
-                                                onClick={() => setAttendanceMap(p => ({ ...p, [s.id]: 'absent' }))}
-                                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${status === 'absent' ? 'bg-red-500 text-white shadow-sm' : 'bg-gray-100 text-gray-400 hover:bg-red-50 hover:text-red-500'}`}
-                                            >
-                                                <XCircle size={14} /> Absent
-                                            </button>
-                                        </div>
-                                        {/* Print view */}
-                                        <div className="hidden print:block font-bold text-lg">
-                                            {status === 'present' ? '✓' : '✗'}
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
+                        <table className="w-full text-sm">
+                            <thead>
+                                <tr className="bg-gray-50 border-b border-gray-100">
+                                    <th className="px-5 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-wider w-10">#</th>
+                                    <th className="px-5 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Élève</th>
+                                    <th className="px-5 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-wider hidden sm:table-cell">Téléphone</th>
+                                    <th className="px-5 py-3 text-center text-xs font-bold text-gray-400 uppercase tracking-wider w-28">Présent</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-50">
+                                {grp.students.map((s, idx) => {
+                                    const isPresent = attendanceMap[s.id] !== false;
+                                    return (
+                                        <tr
+                                            key={s.id}
+                                            onClick={() => setAttendanceMap(p => ({ ...p, [s.id]: !p[s.id] }))}
+                                            className={`cursor-pointer transition-colors ${isPresent ? 'hover:bg-emerald-50/40' : 'bg-red-50/30 hover:bg-red-50/60'}`}
+                                        >
+                                            <td className="px-5 py-3.5 text-gray-400 font-mono text-xs">{idx + 1}</td>
+                                            <td className="px-5 py-3.5">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black shrink-0 transition-colors ${isPresent ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-500'}`}>
+                                                        {s.name[0]}{s.surname[0]}
+                                                    </div>
+                                                    <span className={`font-semibold transition-colors ${isPresent ? 'text-gray-800' : 'text-gray-400 line-through'}`}>
+                                                        {s.name} {s.surname}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="px-5 py-3.5 text-gray-400 text-xs hidden sm:table-cell">{s.phone || '—'}</td>
+                                            <td className="px-5 py-3.5 print:hidden">
+                                                <div className={`w-7 h-7 rounded-md border-2 flex items-center justify-center mx-auto transition-all ${
+                                                    isPresent
+                                                        ? 'bg-emerald-500 border-emerald-500 text-white shadow-sm shadow-emerald-200'
+                                                        : 'bg-white border-gray-300 text-transparent hover:border-emerald-400'
+                                                }`}>
+                                                    <Check size={14} strokeWidth={3} />
+                                                </div>
+                                            </td>
+                                            <td className="px-5 py-3.5 text-center hidden print:table-cell font-bold text-lg">
+                                                {isPresent ? '✓' : '✗'}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
                     )}
 
                     {grp.students.length > 0 && (
