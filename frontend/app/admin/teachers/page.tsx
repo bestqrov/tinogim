@@ -25,7 +25,10 @@ import {
     Key,
     ShieldCheck,
     ShieldOff,
-    Loader2
+    Loader2,
+    Eye,
+    EyeOff,
+    X
 } from 'lucide-react';
 import { teachersService } from '@/lib/services/teachers';
 import { formationsService } from '@/lib/services/formations';
@@ -68,10 +71,13 @@ const TeachersContent = () => {
 
     // Password management state
     const [loginEnabledCount, setLoginEnabledCount] = useState(0);
-    const [passwordInputs, setPasswordInputs] = useState<Record<string, string>>({});
-    const [showPasswordForm, setShowPasswordForm] = useState<Record<string, boolean>>({});
-    const [passwordLoading, setPasswordLoading] = useState<Record<string, boolean>>({});
-    const [passwordError, setPasswordError] = useState<Record<string, string>>({});
+    const [passwordModalTeacher, setPasswordModalTeacher] = useState<Teacher | null>(null);
+    const [passwordInput, setPasswordInput] = useState('');
+    const [passwordConfirm, setPasswordConfirm] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [passwordLoading, setPasswordLoading] = useState(false);
+    const [passwordError, setPasswordError] = useState('');
+    const [disableLoading, setDisableLoading] = useState<Record<string, boolean>>({});
 
     const initialFormData = {
         name: '',
@@ -197,32 +203,48 @@ const TeachersContent = () => {
         });
     };
 
-    const handleSetTeacherPassword = async (teacherId: string) => {
-        const password = passwordInputs[teacherId] || '';
-        if (password.length < 6) {
-            setPasswordError(prev => ({ ...prev, [teacherId]: 'Le mot de passe doit comporter au moins 6 caractères.' }));
+    const openPasswordModal = (teacher: Teacher) => {
+        setPasswordModalTeacher(teacher);
+        setPasswordInput('');
+        setPasswordConfirm('');
+        setPasswordError('');
+        setShowPassword(false);
+    };
+
+    const closePasswordModal = () => {
+        setPasswordModalTeacher(null);
+        setPasswordInput('');
+        setPasswordConfirm('');
+        setPasswordError('');
+    };
+
+    const handleSetTeacherPassword = async () => {
+        if (!passwordModalTeacher) return;
+        if (passwordInput.length < 6) {
+            setPasswordError('Le mot de passe doit comporter au moins 6 caractères.');
             return;
         }
-        setPasswordLoading(prev => ({ ...prev, [teacherId]: true }));
-        setPasswordError(prev => ({ ...prev, [teacherId]: '' }));
+        if (passwordInput !== passwordConfirm) {
+            setPasswordError('Les mots de passe ne correspondent pas.');
+            return;
+        }
+        setPasswordLoading(true);
+        setPasswordError('');
         try {
-            await teachersService.setPassword(teacherId, password);
-            setShowPasswordForm(prev => ({ ...prev, [teacherId]: false }));
-            setPasswordInputs(prev => ({ ...prev, [teacherId]: '' }));
-            // Update teacher in list
-            setTeachers(prev => prev.map(t => t.id === teacherId ? { ...t, loginEnabled: true } : t));
+            await teachersService.setPassword(passwordModalTeacher.id, passwordInput);
+            setTeachers(prev => prev.map(t => t.id === passwordModalTeacher.id ? { ...t, loginEnabled: true } : t));
             fetchLoginEnabledCount();
+            closePasswordModal();
         } catch (err: any) {
-            const msg = err.response?.data?.error || err.message || 'Erreur';
-            setPasswordError(prev => ({ ...prev, [teacherId]: msg }));
+            setPasswordError(err.response?.data?.error || err.message || 'Erreur');
         } finally {
-            setPasswordLoading(prev => ({ ...prev, [teacherId]: false }));
+            setPasswordLoading(false);
         }
     };
 
     const handleDisableTeacherLogin = async (teacherId: string) => {
         if (!confirm('Désactiver le compte de connexion de ce formateur ?')) return;
-        setPasswordLoading(prev => ({ ...prev, [teacherId]: true }));
+        setDisableLoading(prev => ({ ...prev, [teacherId]: true }));
         try {
             await teachersService.disableLogin(teacherId);
             setTeachers(prev => prev.map(t => t.id === teacherId ? { ...t, loginEnabled: false } : t));
@@ -230,7 +252,7 @@ const TeachersContent = () => {
         } catch (err: any) {
             alert(err.response?.data?.error || err.message || 'Erreur');
         } finally {
-            setPasswordLoading(prev => ({ ...prev, [teacherId]: false }));
+            setDisableLoading(prev => ({ ...prev, [teacherId]: false }));
         }
     };
 
@@ -373,61 +395,127 @@ const TeachersContent = () => {
                                     </span>
                                     <button
                                         onClick={() => handleDisableTeacherLogin(teacher.id)}
-                                        disabled={!!passwordLoading[teacher.id]}
+                                        disabled={!!disableLoading[teacher.id]}
                                         className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 font-medium transition disabled:opacity-50"
                                     >
-                                        {passwordLoading[teacher.id] ? <Loader2 size={12} className="animate-spin" /> : <ShieldOff size={12} />}
+                                        {disableLoading[teacher.id] ? <Loader2 size={12} className="animate-spin" /> : <ShieldOff size={12} />}
                                         Désactiver
                                     </button>
                                 </div>
                             ) : (
-                                <>
-                                    {showPasswordForm[teacher.id] ? (
-                                        <div className="space-y-2">
-                                            <input
-                                                type="password"
-                                                placeholder="Nouveau mot de passe"
-                                                value={passwordInputs[teacher.id] || ''}
-                                                onChange={e => setPasswordInputs(prev => ({ ...prev, [teacher.id]: e.target.value }))}
-                                                className="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-amber-400 bg-slate-50"
-                                                onKeyDown={e => e.key === 'Enter' && handleSetTeacherPassword(teacher.id)}
-                                            />
-                                            {passwordError[teacher.id] && (
-                                                <p className="text-[11px] text-red-500">{passwordError[teacher.id]}</p>
-                                            )}
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={() => handleSetTeacherPassword(teacher.id)}
-                                                    disabled={!!passwordLoading[teacher.id] || loginEnabledCount >= 20}
-                                                    className="flex-1 py-1.5 text-xs bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-lg font-semibold transition flex items-center justify-center gap-1"
-                                                >
-                                                    {passwordLoading[teacher.id] ? <Loader2 size={11} className="animate-spin" /> : <Key size={11} />}
-                                                    {loginEnabledCount >= 20 ? 'Limite atteinte' : 'Valider'}
-                                                </button>
-                                                <button
-                                                    onClick={() => setShowPasswordForm(prev => ({ ...prev, [teacher.id]: false }))}
-                                                    className="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-700 border border-slate-200 rounded-lg transition"
-                                                >
-                                                    Annuler
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <button
-                                            onClick={() => setShowPasswordForm(prev => ({ ...prev, [teacher.id]: true }))}
-                                            disabled={loginEnabledCount >= 20}
-                                            className="w-full flex items-center justify-center gap-1.5 py-1.5 text-xs text-slate-500 hover:text-slate-800 border border-dashed border-slate-200 hover:border-slate-400 rounded-lg transition disabled:opacity-40 disabled:cursor-not-allowed font-medium"
-                                        >
-                                            <Key size={12} />
-                                            {loginEnabledCount >= 20 ? `Limite 20 atteinte` : 'Activer compte connexion'}
-                                        </button>
-                                    )}
-                                </>
+                                <button
+                                    onClick={() => openPasswordModal(teacher)}
+                                    disabled={loginEnabledCount >= 20}
+                                    className="w-full flex items-center justify-center gap-1.5 py-2 text-xs text-slate-500 hover:text-slate-800 hover:bg-slate-50 border border-dashed border-slate-200 hover:border-slate-400 rounded-lg transition disabled:opacity-40 disabled:cursor-not-allowed font-medium"
+                                >
+                                    <Key size={12} />
+                                    {loginEnabledCount >= 20 ? 'Limite 20 atteinte' : 'Activer compte connexion'}
+                                </button>
                             )}
                         </div>
                     </div>
                 ))}
             </div>
+
+            {/* ── Password Activation Modal ── */}
+            {passwordModalTeacher && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-md" onClick={closePasswordModal}>
+                    <div
+                        className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in duration-200"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        {/* Header */}
+                        <div className="px-6 py-5 bg-gradient-to-r from-emerald-500 to-teal-500 relative">
+                            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                                <Key size={20} />
+                                Activer le compte
+                            </h2>
+                            <p className="text-white/80 text-sm mt-0.5">{passwordModalTeacher.name}</p>
+                            <button
+                                onClick={closePasswordModal}
+                                className="absolute top-4 right-4 text-white/70 hover:text-white transition"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        {/* Body */}
+                        <div className="p-6 space-y-4">
+                            {loginEnabledCount >= 20 && (
+                                <div className="bg-red-50 border border-red-100 rounded-xl p-3 text-sm text-red-600 font-medium">
+                                    ⚠️ Limite de 20 comptes atteinte. Désactivez un autre compte pour continuer.
+                                </div>
+                            )}
+
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Email utilisé</label>
+                                <div className="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-500">
+                                    {passwordModalTeacher.email || <span className="italic text-slate-400">Aucun email renseigné</span>}
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Mot de passe *</label>
+                                <div className="relative">
+                                    <input
+                                        type={showPassword ? 'text' : 'password'}
+                                        value={passwordInput}
+                                        onChange={e => setPasswordInput(e.target.value)}
+                                        placeholder="Minimum 6 caractères"
+                                        className="w-full px-4 pr-10 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-slate-50"
+                                        autoFocus
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(v => !v)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                        tabIndex={-1}
+                                    >
+                                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-slate-700 mb-1.5">Confirmer le mot de passe *</label>
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    value={passwordConfirm}
+                                    onChange={e => setPasswordConfirm(e.target.value)}
+                                    placeholder="Répétez le mot de passe"
+                                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 bg-slate-50"
+                                    onKeyDown={e => e.key === 'Enter' && handleSetTeacherPassword()}
+                                />
+                            </div>
+
+                            {passwordError && (
+                                <p className="text-sm text-red-600 bg-red-50 rounded-xl px-3 py-2">{passwordError}</p>
+                            )}
+
+                            <div className="flex gap-3 pt-1">
+                                <button
+                                    onClick={closePasswordModal}
+                                    className="flex-1 py-2.5 text-sm border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl font-medium transition"
+                                >
+                                    Annuler
+                                </button>
+                                <button
+                                    onClick={handleSetTeacherPassword}
+                                    disabled={passwordLoading || loginEnabledCount >= 20 || !passwordInput}
+                                    className="flex-1 py-2.5 text-sm bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold rounded-xl transition flex items-center justify-center gap-2"
+                                >
+                                    {passwordLoading ? <Loader2 size={15} className="animate-spin" /> : <ShieldCheck size={15} />}
+                                    {passwordLoading ? 'Activation...' : 'Activer'}
+                                </button>
+                            </div>
+
+                            <p className="text-center text-xs text-slate-400">
+                                {loginEnabledCount}/20 comptes actifs
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Modal */}
             {isModalOpen && (
