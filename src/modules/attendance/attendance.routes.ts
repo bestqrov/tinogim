@@ -5,13 +5,15 @@ import { roleMiddleware } from '../../middlewares/role.middleware';
 
 const router = Router();
 
-// All routes require authentication and ADMIN role
+// All routes require authentication
 router.use(authMiddleware);
-router.use(roleMiddleware('ADMIN'));
 
-router.post('/', create);
-router.post('/bulk', bulkCreate);
-router.get('/group/:id', getByGroup);
-router.get('/student/:id', getByStudent);
+// Read attendance by group or student: accessible by ADMIN, SUPER_ADMIN, SECRETARY, and TEACHER
+router.get('/group/:id', roleMiddleware('ADMIN', 'SUPER_ADMIN', 'SECRETARY', 'TEACHER'), getByGroup);
+router.get('/student/:id', roleMiddleware('ADMIN', 'SUPER_ADMIN', 'SECRETARY', 'TEACHER'), getByStudent);
+
+// Write attendance: accessible by ADMIN, SUPER_ADMIN, SECRETARY, and TEACHER
+router.post('/', roleMiddleware('ADMIN', 'SUPER_ADMIN', 'SECRETARY', 'TEACHER'), create);
+router.post('/bulk', roleMiddleware('ADMIN', 'SUPER_ADMIN', 'SECRETARY', 'TEACHER'), bulkCreate);
 
 export default router;

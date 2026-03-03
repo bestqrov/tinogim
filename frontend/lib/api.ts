@@ -17,7 +17,15 @@ const processQueue = (error: any, token: string | null = null) => {
 
 api.interceptors.request.use((config) => {
     const token = getAccessToken();
-    if (token && config.headers) config.headers.Authorization = `Bearer ${token}`;
+    if (token && config.headers) {
+        config.headers.Authorization = `Bearer ${token}`;
+    } else if (typeof window !== 'undefined') {
+        // Fallback to teacher token when no admin token is available
+        const teacherToken = localStorage.getItem('teacherToken');
+        if (teacherToken && config.headers) {
+            config.headers.Authorization = `Bearer ${teacherToken}`;
+        }
+    }
     return config;
 });
 
