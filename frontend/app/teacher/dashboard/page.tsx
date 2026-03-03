@@ -759,12 +759,13 @@ export default function TeacherDashboardPage() {
                                                             (item.description ? `\n\n${item.description}` : '') +
                                                             (item.note ? `\n\n📌 ${item.note}` : '')
                                                         );
-                                                        const href = grp?.whatsappUrl || `https://wa.me/?text=${whatsappText}`;
+                                                        const href = `https://wa.me/?text=${whatsappText}`;
                                                         return (
                                                             <a href={href} target="_blank" rel="noopener noreferrer"
                                                                 title="Partager sur WhatsApp"
-                                                                className="w-8 h-8 rounded-lg hover:bg-green-50 flex items-center justify-center text-gray-400 hover:text-green-600 transition-colors">
-                                                                <MessageCircle size={14} />
+                                                                className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-green-100 hover:bg-green-500 text-green-700 hover:text-white transition-colors text-xs font-bold">
+                                                                <MessageCircle size={13} />
+                                                                <span>WA</span>
                                                             </a>
                                                         );
                                                     })()}
