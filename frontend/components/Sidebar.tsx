@@ -13,7 +13,8 @@ import {
   Menu,
   X,
   Building,
-  Calendar
+  Calendar,
+  Bell
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useSchoolProfile } from '@/hooks/useSchoolProfile';
@@ -89,6 +90,14 @@ export function Sidebar({ currentPath, role }: SidebarProps) {
       path: '/admin/presence',
       activeColor: 'bg-[#334155]/50 border-[#F472B6]',
       iconColor: 'text-[#F472B6]'
+    },
+    {
+      id: 'notifications',
+      label: 'Alertes Élèves',
+      icon: Bell,
+      path: '/admin/notifications',
+      activeColor: 'bg-[#334155]/50 border-[#FBBF24]',
+      iconColor: 'text-[#FBBF24]'
     },
     {
       id: 'personnel',

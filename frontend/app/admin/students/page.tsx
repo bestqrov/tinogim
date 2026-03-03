@@ -18,7 +18,10 @@ import {
     User as UserIcon,
     Shield,
     Calendar,
-    ArrowRight
+    ArrowRight,
+    KeyRound,
+    Check,
+    X
 } from 'lucide-react';
 import { getStudents, deleteStudent } from '@/lib/services/students';
 import { groupsService } from '@/lib/services/groups'; // Adjust path if needed
@@ -31,6 +34,45 @@ export default function StudentsPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [filterLevel, setFilterLevel] = useState('ALL');
     const [showFilters, setShowFilters] = useState(false);
+
+    // View Switching State
+    const [credentialStudent, setCredentialStudent] = useState<any>(null);
+    const [credForm, setCredForm] = useState({ username: '', password: '' });
+    const [credSaving, setCredSaving] = useState(false);
+    const [credMsg, setCredMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+    const handleEnablePortal = (student: any) => {
+        const defaultUsername = (student.name[0] + student.surname).toLowerCase().replace(/\s+/g, '');
+        setCredForm({ username: defaultUsername, password: '' });
+        setCredMsg(null);
+        setCredentialStudent(student);
+    };
+
+    const saveCredentials = async () => {
+        if (!credForm.username || !credForm.password) {
+            setCredMsg({ ok: false, text: 'Renseignez le nom d\'utilisateur et le mot de passe.' });
+            return;
+        }
+        setCredSaving(true);
+        setCredMsg(null);
+        try {
+            const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${base}/api/students/${credentialStudent.id}/enable-login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify(credForm),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Erreur');
+            setCredMsg({ ok: true, text: `Portail activé ! Identifiant: ${credForm.username}` });
+            setStudents(prev => prev.map(s => s.id === credentialStudent.id ? { ...s, loginEnabled: true, username: credForm.username } : s));
+        } catch (e: any) {
+            setCredMsg({ ok: false, text: e.message });
+        } finally {
+            setCredSaving(false);
+        }
+    };
 
     // View Switching State
     const [isAddMode, setIsAddMode] = useState(false); // Replaces isModalOpen
@@ -349,6 +391,17 @@ export default function StudentsPage() {
                                                         <ArrowRight size={18} />
                                                     </button>
                                                     <button
+                                                        onClick={() => handleEnablePortal(student)}
+                                                        className={`w-9 h-9 flex items-center justify-center rounded-xl transition-all ${
+                                                            student.loginEnabled
+                                                                ? 'text-emerald-500 hover:text-emerald-700 hover:bg-emerald-50'
+                                                                : 'text-slate-400 hover:text-purple-600 hover:bg-purple-50'
+                                                        }`}
+                                                        title={student.loginEnabled ? `Portail actif — ${student.username}` : 'Activer portail élève'}
+                                                    >
+                                                        <KeyRound size={18} />
+                                                    </button>
+                                                    <button
                                                         onClick={() => handleEdit(student)}
                                                         className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-xl transition-all"
                                                         title="Modifier"
@@ -410,6 +463,64 @@ export default function StudentsPage() {
                     onClose={() => setIsGroupModalOpen(false)}
                     student={selectedStudentForGroup}
                 />
+            )}
+
+            {/* Credentials Modal */}
+            {credentialStudent && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={() => setCredentialStudent(null)}>
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center justify-between mb-5">
+                            <div>
+                                <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
+                                    <KeyRound size={20} className="text-purple-600" />
+                                    Portail Élève
+                                </h3>
+                                <p className="text-sm text-gray-400 mt-0.5">{credentialStudent.name} {credentialStudent.surname}</p>
+                            </div>
+                            <button onClick={() => setCredentialStudent(null)} className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-100"><X size={18} /></button>
+                        </div>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Identifiant (username)</label>
+                                <input
+                                    value={credForm.username}
+                                    onChange={e => setCredForm(p => ({ ...p, username: e.target.value }))}
+                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+                                    placeholder="ex: mbouazza"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Mot de passe</label>
+                                <input
+                                    type="password"
+                                    value={credForm.password}
+                                    onChange={e => setCredForm(p => ({ ...p, password: e.target.value }))}
+                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
+                                    placeholder="Choisir un mot de passe"
+                                />
+                            </div>
+                            {credMsg && (
+                                <div className={`p-3 rounded-xl text-sm font-medium flex items-center gap-2 ${
+                                    credMsg.ok ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'
+                                }`}>
+                                    {credMsg.ok ? <Check size={16} /> : <X size={16} />}
+                                    {credMsg.text}
+                                </div>
+                            )}
+                            <p className="text-xs text-gray-400 bg-gray-50 p-3 rounded-xl">
+                                L'élève se connecte sur <strong>/student/login</strong> avec cet identifiant et ce mot de passe.
+                            </p>
+                        </div>
+                        <div className="flex gap-3 mt-6">
+                            <button onClick={() => setCredentialStudent(null)} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-gray-600 hover:bg-gray-50">Annuler</button>
+                            <button
+                                onClick={saveCredentials}
+                                disabled={credSaving}
+                                className="flex-1 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold disabled:opacity-60"
+                            >{credSaving ? 'Enregistrement...' : 'Activer le portail'}</button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

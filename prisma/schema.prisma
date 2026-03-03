@@ -60,6 +60,12 @@ model Student {
   subjects      Json?
   photo         String? // Base64 encoded image or file path
   active        Boolean   @default(true)
+
+  // Student portal login (admin-managed)
+  loginEnabled  Boolean   @default(false)
+  password      String?   // hashed
+  username      String?   // e.g. first initial + surname
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -218,6 +224,20 @@ model Transaction {
   updatedAt   DateTime        @updatedAt
 
   @@map("transactions")
+}
+
+model Notification {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  title      String
+  message    String
+  type       String   @default("INFO") // INFO, WARNING, URGENT
+  targetAll  Boolean  @default(true)
+  studentIds String[] @db.ObjectId
+  createdBy  String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("notifications")
 }
 
 model Pricing {

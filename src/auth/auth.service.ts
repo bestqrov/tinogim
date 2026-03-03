@@ -54,5 +54,39 @@ export const loginUser = async (data: LoginData) => {
         };
     }
 
+    // Fall back to Student table (loginEnabled accounts only)
+    const student = await prisma.student.findFirst({
+        where: {
+            OR: [
+                { email: email.toLowerCase() },
+                { username: email.toLowerCase() },
+            ],
+            loginEnabled: true,
+        },
+    });
+
+    if (student && student.password) {
+        const isPasswordValid = await comparePassword(password, student.password);
+        if (!isPasswordValid) {
+            throw new Error('Invalid email or password');
+        }
+        const token = generateToken({
+            id: student.id,
+            email: student.email || student.username || '',
+            role: 'STUDENT',
+            name: `${student.name} ${student.surname}`,
+        });
+        return {
+            token,
+            user: {
+                id: student.id,
+                email: student.email,
+                username: student.username,
+                name: `${student.name} ${student.surname}`,
+                role: 'STUDENT',
+            },
+        };
+    }
+
     throw new Error('Invalid email or password');
 };

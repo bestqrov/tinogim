@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import bcrypt from 'bcryptjs';
 import {
     createStudent,
     getAllStudents,
@@ -8,6 +9,7 @@ import {
     getStudentAnalytics,
 } from './students.service';
 import { sendSuccess, sendError } from '../../utils/response';
+import prisma from '../../config/database';
 
 export const create = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -121,5 +123,52 @@ export const getAnalytics = async (req: Request, res: Response): Promise<void> =
         sendSuccess(res, analytics, 'Analytics retrieved successfully', 200);
     } catch (error: any) {
         sendError(res, error.message, 'Failed to retrieve analytics', 500);
+    }
+};
+
+// POST /api/students/:id/enable-login — admin creates portal credentials for student
+export const enableLogin = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        const { username, password } = req.body;
+
+        if (!username || !password) {
+            sendError(res, 'Username and password are required', 'Validation error', 400);
+            return;
+        }
+
+        // Check username not taken by another student
+        const existing = await prisma.student.findFirst({
+            where: { username: username.toLowerCase(), NOT: { id } },
+        });
+        if (existing) {
+            sendError(res, 'Ce nom d\'utilisateur est déjà pris.', 'Conflict', 400);
+            return;
+        }
+
+        const hashed = await bcrypt.hash(password, 10);
+        const student = await prisma.student.update({
+            where: { id },
+            data: { username: username.toLowerCase(), password: hashed, loginEnabled: true },
+            select: { id: true, name: true, surname: true, username: true, loginEnabled: true },
+        });
+
+        sendSuccess(res, student, 'Accès portail activé avec succès', 200);
+    } catch (error: any) {
+        sendError(res, error.message, 'Failed to enable student login', 500);
+    }
+};
+
+// POST /api/students/:id/disable-login — revoke portal access
+export const disableLogin = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        await prisma.student.update({
+            where: { id },
+            data: { loginEnabled: false },
+        });
+        sendSuccess(res, null, 'Accès portail désactivé', 200);
+    } catch (error: any) {
+        sendError(res, error.message, 'Failed', 500);
     }
 };

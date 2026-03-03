@@ -159,6 +159,10 @@ export default function LoginPage() {
 
                     {/* Bottom Section: Footer/Hint (Stays at bottom) */}
                     <div className="shrink-0 mt-8 pt-6 border-t border-slate-50 flex flex-col items-center gap-4 animate-in fade-in duration-1000 delay-500 text-center">
+                        {/* Student portal link */}
+                        <a href="/student/login" className="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-indigo-600 transition-colors">
+                            🎓 Portail Élève — accès séparé
+                        </a>
                         <div className="flex flex-col gap-2 text-slate-400 font-medium text-xs mt-2">
                             <div className="flex items-center justify-center gap-2">
                                 <span>📧 Email :</span>
