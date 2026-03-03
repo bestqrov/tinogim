@@ -34,7 +34,10 @@ export default function LoginPage() {
             const user = data.data?.user;
 
             if (user?.role === 'TEACHER') {
+                // Store token in localStorage AND update Zustand store state
                 setTeacherToken(token);
+                const { useTeacherAuthStore } = await import('../../store/useTeacherAuthStore');
+                useTeacherAuthStore.setState({ teacher: user, teacherToken: token, loading: false });
                 router.push('/teacher/dashboard');
             } else {
                 setAccessToken(token);

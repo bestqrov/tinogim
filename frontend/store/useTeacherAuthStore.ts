@@ -73,29 +73,23 @@ export const useTeacherAuthStore = create<TeacherAuthState>((set) => ({
         clearTeacherToken();
         set({ teacher: null, teacherToken: null });
         if (typeof window !== 'undefined') {
-            window.location.href = `${window.location.origin}/teacher/login`;
+            window.location.href = `${window.location.origin}/login`;
         }
     },
 
     getMe: async () => {
         try {
             set({ loading: true });
-            const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
             const token = getTeacherToken();
             if (!token) {
                 set({ loading: false, teacher: null });
                 return;
             }
-            const res = await fetch(`${baseURL}/api/teachers/me`, {
+            const { default: api } = await import('../lib/api');
+            const res = await api.get('/teachers/me', {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            if (!res.ok) {
-                clearTeacherToken();
-                set({ teacher: null, teacherToken: null, loading: false });
-                return;
-            }
-            const data = await res.json();
-            set({ teacher: data.data, teacherToken: token, loading: false });
+            set({ teacher: res.data.data, teacherToken: token, loading: false });
         } catch {
             clearTeacherToken();
             set({ teacher: null, teacherToken: null, loading: false });

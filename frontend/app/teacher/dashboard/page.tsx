@@ -10,7 +10,7 @@ export default function TeacherDashboardPage() {
 
     useEffect(() => {
         if (!teacherToken) {
-            router.replace('/teacher/login');
+            router.replace('/login');
             return;
         }
         if (!teacher) getMe();
