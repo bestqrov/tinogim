@@ -20,7 +20,6 @@ interface Group {
     teacher?: { name: string };
     room?: string;
     students: Student[];
-    _count: { students: number };
 }
 
 export default function PresencePage() {
@@ -142,7 +141,7 @@ export default function PresencePage() {
                                 <option value="">— Choisir un groupe —</option>
                                 {groups.map(g => (
                                     <option key={g.id} value={g.id}>
-                                        {g.name}{g.subject ? ` — ${g.subject}` : ''}{g.level ? ` (${g.level})` : ''} · {g._count.students} élèves
+                                        {g.name}{g.subject ? ` — ${g.subject}` : ''}{g.level ? ` (${g.level})` : ''} · {g.students.length} élèves
                                     </option>
                                 ))}
                             </select>
