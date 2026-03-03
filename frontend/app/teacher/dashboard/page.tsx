@@ -8,7 +8,7 @@ import {
     Clock, CheckCircle2, XCircle, Activity, Save, RefreshCw,
     Bell, BellRing, Layers, UserCheck, ClipboardList,
     Hash, ChevronDown, ChevronUp, LogOut,
-    Plus, Pencil, Trash2, FileText, FlaskConical, X
+    Plus, Pencil, Trash2, FileText, FlaskConical, X, MessageCircle
 } from 'lucide-react';
 import { useTeacherAuthStore } from '../../../store/useTeacherAuthStore';
 import { bulkSaveAttendance, getAttendanceByGroup } from '../../../lib/services/attendance';
@@ -390,13 +390,29 @@ export default function TeacherDashboardPage() {
                                 </button>
 
                                 {grp.timeSlots && grp.timeSlots.length > 0 && (
-                                    <div className="px-5 py-2 bg-gray-50 border-t border-gray-100 flex flex-wrap gap-2">
+                                    <div className="px-5 py-2 bg-gray-50 border-t border-gray-100 flex flex-wrap gap-2 items-center">
                                         {grp.timeSlots.map((slot, i) => (
                                             <span key={i} className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-xs font-semibold border border-amber-100">
                                                 <Clock size={11} />
                                                 {DAYS_FR[slot.day] || slot.day} {slot.startTime}–{slot.endTime}
                                             </span>
                                         ))}
+                                        {grp.whatsappUrl && (
+                                            <a href={grp.whatsappUrl} target="_blank" rel="noopener noreferrer"
+                                                onClick={e => e.stopPropagation()}
+                                                className="ml-auto flex items-center gap-1.5 px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded-full text-xs font-bold transition-colors shadow-sm">
+                                                <MessageCircle size={12} /> Groupe WhatsApp
+                                            </a>
+                                        )}
+                                    </div>
+                                )}
+                                {!grp.timeSlots?.length && grp.whatsappUrl && (
+                                    <div className="px-5 py-2 bg-gray-50 border-t border-gray-100 flex">
+                                        <a href={grp.whatsappUrl} target="_blank" rel="noopener noreferrer"
+                                            onClick={e => e.stopPropagation()}
+                                            className="flex items-center gap-1.5 px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded-full text-xs font-bold transition-colors shadow-sm">
+                                            <MessageCircle size={12} /> Groupe WhatsApp
+                                        </a>
                                     </div>
                                 )}
 
@@ -734,6 +750,24 @@ export default function TeacherDashboardPage() {
                                                     {item.note && <p className="mt-1 text-xs text-amber-600 italic">{item.note}</p>}
                                                 </div>
                                                 <div className="flex items-center gap-1 flex-shrink-0">
+                                                    {(() => {
+                                                        const whatsappText = encodeURIComponent(
+                                                            `${isExam ? '📝 Examen' : '📚 Cours'} - ${item.title}` +
+                                                            `\n📅 ${new Date(item.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}` +
+                                                            (item.duration ? `\n⏱ Durée : ${item.duration}` : '') +
+                                                            (grp ? `\n👥 Groupe : ${grp.name}` : '') +
+                                                            (item.description ? `\n\n${item.description}` : '') +
+                                                            (item.note ? `\n\n📌 ${item.note}` : '')
+                                                        );
+                                                        const href = grp?.whatsappUrl || `https://wa.me/?text=${whatsappText}`;
+                                                        return (
+                                                            <a href={href} target="_blank" rel="noopener noreferrer"
+                                                                title="Partager sur WhatsApp"
+                                                                className="w-8 h-8 rounded-lg hover:bg-green-50 flex items-center justify-center text-gray-400 hover:text-green-600 transition-colors">
+                                                                <MessageCircle size={14} />
+                                                            </a>
+                                                        );
+                                                    })()}
                                                     <button onClick={() => editCours(item)} className="w-8 h-8 rounded-lg hover:bg-amber-50 flex items-center justify-center text-gray-400 hover:text-amber-600 transition-colors">
                                                         <Pencil size={14} />
                                                     </button>
