@@ -225,6 +225,7 @@ export interface Teacher {
     commission?: number;
     specialties: string[];
     levels: string[];
+    loginEnabled?: boolean;
     createdAt: string;
     updatedAt: string;
     _count?: {

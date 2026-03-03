@@ -1,4 +1,6 @@
 import prisma from '../../config/database';
+import { hashPassword, comparePassword } from '../../utils/bcrypt';
+import { generateToken } from '../../utils/jwt';
 
 export interface CreateTeacherData {
     name: string;
@@ -121,3 +123,89 @@ export const calculateMonthlyTeacherExpenses = async () => {
     };
 };
 
+// ===== TEACHER LOGIN SYSTEM =====
+
+const MAX_TEACHER_ACCOUNTS = 20;
+
+export const setTeacherPassword = async (id: string, plainPassword: string) => {
+    // Count currently enabled accounts excluding this teacher
+    const enabledCount = await prisma.teacher.count({
+        where: { loginEnabled: true, id: { not: id } }
+    });
+    if (enabledCount >= MAX_TEACHER_ACCOUNTS) {
+        throw new Error(`Maximum ${MAX_TEACHER_ACCOUNTS} teacher login accounts allowed. Please disable another account first.`);
+    }
+    if (!plainPassword || plainPassword.length < 6) {
+        throw new Error('Password must be at least 6 characters long.');
+    }
+    const hashedPassword = await hashPassword(plainPassword);
+    return await prisma.teacher.update({
+        where: { id },
+        data: { password: hashedPassword, loginEnabled: true },
+        select: { id: true, name: true, email: true, loginEnabled: true }
+    });
+};
+
+export const disableTeacherLogin = async (id: string) => {
+    return await prisma.teacher.update({
+        where: { id },
+        data: { loginEnabled: false, password: null },
+        select: { id: true, name: true, email: true, loginEnabled: true }
+    });
+};
+
+export const teacherLogin = async (email: string, password: string) => {
+    if (!email || !password) throw new Error('Email and password are required.');
+    const teacher = await prisma.teacher.findFirst({
+        where: { email, loginEnabled: true }
+    });
+    if (!teacher || !teacher.password) {
+        throw new Error('Invalid email or password.');
+    }
+    const valid = await comparePassword(password, teacher.password);
+    if (!valid) throw new Error('Invalid email or password.');
+    const token = generateToken({
+        id: teacher.id,
+        email: teacher.email!,
+        role: 'TEACHER',
+        name: teacher.name
+    });
+    return {
+        token,
+        teacher: {
+            id: teacher.id,
+            email: teacher.email,
+            name: teacher.name,
+            role: 'TEACHER',
+            picture: teacher.picture
+        }
+    };
+};
+
+export const getTeacherProfile = async (id: string) => {
+    return await prisma.teacher.findUnique({
+        where: { id },
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            picture: true,
+            status: true,
+            specialties: true,
+            levels: true,
+            loginEnabled: true,
+            groups: {
+                select: {
+                    id: true,
+                    name: true,
+                    _count: { select: { students: true } }
+                }
+            }
+        }
+    });
+};
+
+export const getLoginEnabledCount = async () => {
+    return await prisma.teacher.count({ where: { loginEnabled: true } });
+};

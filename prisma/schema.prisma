@@ -122,6 +122,10 @@ model Teacher {
   specialties   String[] // Subjects
   levels        String[] // Levels
 
+  // Login system (admin-managed, max 20 teachers)
+  password      String?
+  loginEnabled  Boolean  @default(false)
+
   groups        Group[]
 
   createdAt     DateTime @default(now())
