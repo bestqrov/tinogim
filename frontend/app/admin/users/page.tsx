@@ -111,6 +111,8 @@ export default function UsersCRUD() {
         u.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const secretaryExists = users.some(u => u.role === 'SECRETARY');
+
     return (
         <div className="p-6 space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -268,13 +270,19 @@ export default function UsersCRUD() {
                                 <div className="grid grid-cols-2 gap-3">
                                     <button
                                         type="button"
-                                        onClick={() => setFormData({ ...formData, role: 'SECRETARY' })}
-                                        className={`py-3 rounded-xl border-2 font-bold transition-all ${formData.role === 'SECRETARY'
+                                        onClick={() => !(!editingUser && secretaryExists) && setFormData({ ...formData, role: 'SECRETARY' })}
+                                        disabled={!editingUser && secretaryExists}
+                                        title={!editingUser && secretaryExists ? 'Un compte secrétaire existe déjà' : ''}
+                                        className={`py-3 rounded-xl border-2 font-bold transition-all ${
+                                            !editingUser && secretaryExists
+                                                ? 'border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed'
+                                                : formData.role === 'SECRETARY'
                                                 ? 'border-purple-600 bg-purple-50 text-purple-700'
                                                 : 'border-gray-100 bg-gray-50 text-gray-500 hover:border-gray-200'
-                                            }`}
+                                        }`}
                                     >
                                         Secrétaire
+                                        {!editingUser && secretaryExists && <span className="block text-[10px] font-normal">(limite atteinte)</span>}
                                     </button>
                                     <button
                                         type="button"

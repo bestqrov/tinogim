@@ -29,6 +29,16 @@ export const createUser = async (data: CreateUserData) => {
         throw new Error('Email already exists');
     }
 
+    // Enforce 1-secretary limit
+    if (role === 'SECRETARY') {
+        const secretaryCount = await prisma.user.count({
+            where: { role: 'SECRETARY' },
+        });
+        if (secretaryCount >= 1) {
+            throw new Error('Une seule secrétaire est autorisée. Veuillez modifier le compte existant.');
+        }
+    }
+
     // Hash password
     const hashedPassword = await hashPassword(password);
 
