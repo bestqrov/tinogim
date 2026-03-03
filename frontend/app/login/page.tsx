@@ -92,24 +92,23 @@ export default function LoginPage() {
             <div className="w-full lg:w-1/2 h-screen flex flex-col px-8 sm:px-16 lg:px-24 py-4 lg:py-8 bg-white relative z-10 border-l border-slate-50 shadow-[-50px_0_100px_-50px_rgba(0,0,0,0.05)] overflow-y-auto lg:overflow-hidden custom-scrollbar">
                 <div className="max-w-md w-full mx-auto flex flex-col h-full">
 
-                    {/* School Logo – top right */}
-                    <div className="shrink-0 flex justify-end pt-2 pb-4">
-                        <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-lg border border-slate-100">
-                            <Image
-                                src="/assets/logo-enova.jpg"
-                                alt="Logo Enovazone"
-                                width={64}
-                                height={64}
-                                className="object-cover w-full h-full"
-                                priority
-                            />
-                        </div>
-                    </div>
-
                     {/* Header & Form Section */}
                     <div className="flex-1 flex flex-col justify-center min-h-0">
                         {/* Welcome Header */}
                         <div className="mb-6 lg:mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
+                            {/* School Logo – above heading */}
+                            <div className="mb-5">
+                                <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-lg border border-slate-100">
+                                    <Image
+                                        src="/assets/logo-enova.jpg"
+                                        alt="Logo Enovazone"
+                                        width={64}
+                                        height={64}
+                                        className="object-cover w-full h-full"
+                                        priority
+                                    />
+                                </div>
+                            </div>
                             <h1 className="text-4xl lg:text-5xl font-black tracking-tighter mb-2 text-slate-900 leading-tight">
                                 Espace <span className="text-indigo-600">Connexion</span>
                             </h1>
