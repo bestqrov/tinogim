@@ -2,11 +2,13 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import {
     User, Mail, Phone, BookOpen, GraduationCap, Users, Calendar,
     Clock, CheckCircle2, XCircle, Activity, Save, RefreshCw,
     Bell, BellRing, Layers, UserCheck, ClipboardList,
-    Hash, ChevronDown, ChevronUp, LogOut
+    Hash, ChevronDown, ChevronUp, LogOut,
+    Plus, Pencil, Trash2, FileText, FlaskConical, X
 } from 'lucide-react';
 import { useTeacherAuthStore } from '../../../store/useTeacherAuthStore';
 import { bulkSaveAttendance, getAttendanceByGroup } from '../../../lib/services/attendance';
@@ -80,6 +82,23 @@ export default function TeacherDashboardPage() {
     // Groups expand
     const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
+    // Cours & Examens
+    type CoursType = 'cours' | 'examen';
+    interface CoursItem {
+        id: string;
+        type: CoursType;
+        groupId: string;
+        title: string;
+        description: string;
+        date: string;
+        duration: string;
+        note: string;
+    }
+    const [coursList, setCoursList] = useState<CoursItem[]>([]);
+    const [coursForm, setCoursForm] = useState<Partial<CoursItem> & { type: CoursType }>({ type: 'cours', groupId: '', title: '', description: '', date: new Date().toISOString().split('T')[0], duration: '', note: '' });
+    const [editingCoursId, setEditingCoursId] = useState<string | null>(null);
+    const [showCoursForm, setShowCoursForm] = useState(false);
+
     // Auth guard + load full profile
     useEffect(() => {
         if (!teacherToken) { router.replace('/login'); return; }
@@ -93,8 +112,35 @@ export default function TeacherDashboardPage() {
             setTeacher(storeTeacher as unknown as TeacherDetail);
             const stored = localStorage.getItem(`teacher_notifications_${storeTeacher.id}`);
             if (stored) { try { setNotifications(JSON.parse(stored)); } catch {} }
+            const storedCours = localStorage.getItem(`teacher_cours_${storeTeacher.id}`);
+            if (storedCours) { try { setCoursList(JSON.parse(storedCours)); } catch {} }
         }
     }, [storeTeacher]);
+
+    const saveCoursList = (list: CoursItem[]) => {
+        setCoursList(list);
+        if (teacher) localStorage.setItem(`teacher_cours_${teacher.id}`, JSON.stringify(list));
+    };
+
+    const submitCoursForm = () => {
+        if (!coursForm.title || !coursForm.date || !coursForm.groupId) return;
+        if (editingCoursId) {
+            saveCoursList(coursList.map(c => c.id === editingCoursId ? { ...c, ...coursForm } as CoursItem : c));
+            setEditingCoursId(null);
+        } else {
+            saveCoursList([...coursList, { ...coursForm, id: Date.now().toString() } as CoursItem]);
+        }
+        setCoursForm({ type: 'cours', groupId: '', title: '', description: '', date: new Date().toISOString().split('T')[0], duration: '', note: '' });
+        setShowCoursForm(false);
+    };
+
+    const editCours = (item: CoursItem) => {
+        setCoursForm({ ...item });
+        setEditingCoursId(item.id);
+        setShowCoursForm(true);
+    };
+
+    const deleteCours = (id: string) => saveCoursList(coursList.filter(c => c.id !== id));
 
     // Load attendance when group/date changes
     useEffect(() => {
@@ -167,7 +213,12 @@ export default function TeacherDashboardPage() {
             {/* Header Banner */}
             <div className="bg-gradient-to-r from-[#1e293b] via-[#2e3b4e] to-[#1e293b] text-white">
                 <div className="px-6 py-4 flex items-center justify-between">
-                    <span className="text-sm text-amber-300 font-semibold">Espace Formateur</span>
+                    <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-lg overflow-hidden bg-white/10 flex items-center justify-center flex-shrink-0">
+                            <Image src="/assets/logo-enova.jpg" alt="Enovazone Logo" width={36} height={36} className="object-cover w-full h-full" />
+                        </div>
+                        <span className="text-sm text-amber-300 font-semibold">Espace Formateur</span>
+                    </div>
                     <button
                         onClick={logout}
                         className="flex items-center gap-2 text-sm text-slate-400 hover:text-red-400 transition font-medium"
@@ -501,6 +552,8 @@ export default function TeacherDashboardPage() {
                 {/* ── COURS & EXAMENS ── */}
                 {activeTab === 'cours' && (
                     <div className="space-y-6">
+
+                        {/* Planning hebdomadaire */}
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                             <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-5">Planning hebdomadaire</h3>
                             {groups.length === 0 ? (
@@ -534,6 +587,7 @@ export default function TeacherDashboardPage() {
                             )}
                         </div>
 
+                        {/* Récapitulatif des cours */}
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                             <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-5">Récapitulatif des cours</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -555,6 +609,136 @@ export default function TeacherDashboardPage() {
                                     );
                                 })}
                             </div>
+                        </div>
+
+                        {/* ── Gestion Cours & Examens ── */}
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+                                <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest">Mes Cours &amp; Examens</h3>
+                                <button
+                                    onClick={() => { setShowCoursForm(true); setEditingCoursId(null); setCoursForm({ type: 'cours', groupId: '', title: '', description: '', date: new Date().toISOString().split('T')[0], duration: '', note: '' }); }}
+                                    className="flex items-center gap-2 px-4 py-2 bg-amber-400 hover:bg-amber-500 text-black text-xs font-bold rounded-xl transition-all"
+                                >
+                                    <Plus size={14} /> Ajouter
+                                </button>
+                            </div>
+
+                            {/* Form */}
+                            {showCoursForm && (
+                                <div className="p-5 border-b border-amber-100 bg-amber-50/40">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <p className="font-bold text-gray-700 text-sm">{editingCoursId ? 'Modifier' : 'Nouveau cours / examen'}</p>
+                                        <button onClick={() => setShowCoursForm(false)} className="text-gray-400 hover:text-gray-600"><X size={16} /></button>
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                                        {/* Type */}
+                                        <div>
+                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Type</label>
+                                            <div className="flex gap-2">
+                                                {(['cours', 'examen'] as const).map(t => (
+                                                    <button key={t} onClick={() => setCoursForm(f => ({ ...f, type: t }))}
+                                                        className={`flex-1 py-2 rounded-lg text-xs font-bold border transition-all ${coursForm.type === t ? (t === 'examen' ? 'bg-red-500 text-white border-red-500' : 'bg-blue-500 text-white border-blue-500') : 'bg-white text-gray-400 border-gray-200 hover:border-amber-300'}`}>
+                                                        {t === 'cours' ? <span className="flex items-center justify-center gap-1"><FileText size={12} /> Cours</span> : <span className="flex items-center justify-center gap-1"><FlaskConical size={12} /> Examen</span>}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        {/* Groupe */}
+                                        <div>
+                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Groupe</label>
+                                            <select value={coursForm.groupId} onChange={e => setCoursForm(f => ({ ...f, groupId: e.target.value }))}
+                                                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-300/30 focus:border-amber-400 outline-none bg-white">
+                                                <option value="">— Choisir un groupe —</option>
+                                                {groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+                                            </select>
+                                        </div>
+                                        {/* Titre */}
+                                        <div>
+                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Titre *</label>
+                                            <input value={coursForm.title || ''} onChange={e => setCoursForm(f => ({ ...f, title: e.target.value }))}
+                                                placeholder="Ex: Chapitre 3 - Fonctions" className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-300/30 focus:border-amber-400 outline-none" />
+                                        </div>
+                                        {/* Date */}
+                                        <div>
+                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Date *</label>
+                                            <input type="date" value={coursForm.date || ''} onChange={e => setCoursForm(f => ({ ...f, date: e.target.value }))}
+                                                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-300/30 focus:border-amber-400 outline-none" />
+                                        </div>
+                                        {/* Durée */}
+                                        <div>
+                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Durée</label>
+                                            <input value={coursForm.duration || ''} onChange={e => setCoursForm(f => ({ ...f, duration: e.target.value }))}
+                                                placeholder="Ex: 2h" className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-300/30 focus:border-amber-400 outline-none" />
+                                        </div>
+                                        {/* Description */}
+                                        <div className="sm:col-span-2 xl:col-span-3">
+                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Description / Contenu</label>
+                                            <textarea value={coursForm.description || ''} onChange={e => setCoursForm(f => ({ ...f, description: e.target.value }))}
+                                                rows={2} placeholder="Décrivez le contenu du cours ou de l'examen..."
+                                                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-300/30 focus:border-amber-400 outline-none resize-none" />
+                                        </div>
+                                        {/* Note */}
+                                        <div className="sm:col-span-2 xl:col-span-3">
+                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Note interne</label>
+                                            <input value={coursForm.note || ''} onChange={e => setCoursForm(f => ({ ...f, note: e.target.value }))}
+                                                placeholder="Notes supplémentaires..." className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-300/30 focus:border-amber-400 outline-none" />
+                                        </div>
+                                    </div>
+                                    <div className="mt-4 flex justify-end gap-3">
+                                        <button onClick={() => setShowCoursForm(false)} className="px-4 py-2 rounded-xl text-sm font-semibold text-gray-500 bg-gray-100 hover:bg-gray-200 transition-all">Annuler</button>
+                                        <button onClick={submitCoursForm} disabled={!coursForm.title || !coursForm.date || !coursForm.groupId}
+                                            className="flex items-center gap-2 px-5 py-2 bg-amber-400 hover:bg-amber-500 text-black font-bold text-sm rounded-xl transition-all disabled:opacity-50">
+                                            <Save size={14} /> {editingCoursId ? 'Enregistrer les modifications' : 'Ajouter'}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* List */}
+                            {coursList.length === 0 && !showCoursForm ? (
+                                <div className="p-12 text-center">
+                                    <ClipboardList size={40} className="mx-auto text-gray-200 mb-3" />
+                                    <p className="text-gray-400 font-medium text-sm">Aucun cours ou examen enregistré</p>
+                                    <p className="text-xs text-gray-300 mt-1">Cliquez sur « Ajouter » pour commencer</p>
+                                </div>
+                            ) : (
+                                <div className="divide-y divide-gray-50">
+                                    {[...coursList].sort((a, b) => b.date.localeCompare(a.date)).map(item => {
+                                        const grp = groups.find(g => g.id === item.groupId);
+                                        const isExam = item.type === 'examen';
+                                        return (
+                                            <div key={item.id} className="flex items-start gap-4 px-5 py-4 hover:bg-gray-50 transition-colors">
+                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${isExam ? 'bg-red-100' : 'bg-blue-100'}`}>
+                                                    {isExam ? <FlaskConical size={18} className="text-red-500" /> : <FileText size={18} className="text-blue-500" />}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${isExam ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
+                                                            {isExam ? 'Examen' : 'Cours'}
+                                                        </span>
+                                                        <p className="font-bold text-gray-800 text-sm">{item.title}</p>
+                                                    </div>
+                                                    <div className="flex items-center gap-3 mt-1 text-xs text-gray-400 flex-wrap">
+                                                        <span className="flex items-center gap-1"><Calendar size={11} />{new Date(item.date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                                                        {item.duration && <span className="flex items-center gap-1"><Clock size={11} />{item.duration}</span>}
+                                                        {grp && <span className="flex items-center gap-1"><Layers size={11} />{grp.name}</span>}
+                                                    </div>
+                                                    {item.description && <p className="mt-1.5 text-xs text-gray-500 leading-relaxed line-clamp-2">{item.description}</p>}
+                                                    {item.note && <p className="mt-1 text-xs text-amber-600 italic">{item.note}</p>}
+                                                </div>
+                                                <div className="flex items-center gap-1 flex-shrink-0">
+                                                    <button onClick={() => editCours(item)} className="w-8 h-8 rounded-lg hover:bg-amber-50 flex items-center justify-center text-gray-400 hover:text-amber-600 transition-colors">
+                                                        <Pencil size={14} />
+                                                    </button>
+                                                    <button onClick={() => deleteCours(item.id)} className="w-8 h-8 rounded-lg hover:bg-red-50 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors">
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
