@@ -185,23 +185,27 @@ export const teacherLogin = async (email: string, password: string) => {
 export const getTeacherProfile = async (id: string) => {
     return await prisma.teacher.findUnique({
         where: { id },
-        select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-            picture: true,
-            status: true,
-            specialties: true,
-            levels: true,
-            loginEnabled: true,
+        include: {
             groups: {
-                select: {
-                    id: true,
-                    name: true,
+                include: {
+                    students: {
+                        select: {
+                            id: true,
+                            name: true,
+                            surname: true,
+                            phone: true,
+                            email: true,
+                            schoolLevel: true,
+                            attendances: {
+                                orderBy: { date: 'desc' },
+                                take: 10
+                            }
+                        }
+                    },
                     _count: { select: { students: true } }
                 }
-            }
+            },
+            _count: { select: { groups: true } }
         }
     });
 };
