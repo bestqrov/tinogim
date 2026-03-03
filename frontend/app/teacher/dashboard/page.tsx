@@ -196,7 +196,7 @@ export default function TeacherDashboardPage() {
     }
 
     const groups: Group[] = teacher.groups || [];
-    const totalStudents = groups.reduce((acc, g) => acc + (g._count?.students ?? 0), 0);
+    const totalStudents = groups.reduce((acc, g) => acc + (g.students?.length ?? 0), 0);
     const initials = teacher.name.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase();
     const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -209,7 +209,7 @@ export default function TeacherDashboardPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f0f4ff 0%, #e8eeff 50%, #f5f0e8 100%)' }}>
             {/* Header Banner */}
             <div className="bg-gradient-to-r from-[#1e293b] via-[#2e3b4e] to-[#1e293b] text-white">
                 <div className="px-6 py-4 flex items-center justify-between">
