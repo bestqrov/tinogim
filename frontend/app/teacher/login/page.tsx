@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTeacherAuthStore } from '../../../store/useTeacherAuthStore';
-import { GraduationCap, Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import Image from 'next/image';
+import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
 
 export default function TeacherLoginPage() {
     const [email, setEmail] = useState('');
@@ -46,8 +47,8 @@ export default function TeacherLoginPage() {
                 </div>
                 <div className="relative z-10 text-center max-w-lg px-8">
                     <div className="flex justify-center mb-8">
-                        <div className="p-5 bg-white/5 backdrop-blur-xl rounded-[40px] border border-white/10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)]">
-                            <GraduationCap size={72} className="text-amber-400" />
+                        <div className="p-3 bg-white rounded-2xl shadow-[0_16px_48px_-8px_rgba(0,0,0,0.4)]">
+                            <Image src="/assets/loggo.jpg" alt="Enova Logo" width={80} height={80} className="rounded-xl object-contain" />
                         </div>
                     </div>
                     <h2 className="text-5xl font-black text-white mb-6 tracking-tight leading-tight">
@@ -75,7 +76,7 @@ export default function TeacherLoginPage() {
                 <div className="max-w-md w-full mx-auto flex flex-col h-full justify-center">
                     {/* Mobile logo */}
                     <div className="flex lg:hidden items-center gap-2 mb-8">
-                        <GraduationCap size={28} className="text-amber-500" />
+                        <Image src="/assets/loggo.jpg" alt="Enova Logo" width={32} height={32} className="rounded-md object-contain" />
                         <span className="font-black text-slate-900 text-xl">Espace Formateur</span>
                     </div>
 
