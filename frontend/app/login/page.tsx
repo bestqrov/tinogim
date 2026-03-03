@@ -97,19 +97,19 @@ export default function LoginPage() {
                         {/* Welcome Header */}
                         <div className="mb-6 lg:mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
                             {/* School Logo – above heading */}
-                            <div className="mb-5">
-                                <div className="w-14 h-14 rounded-xl overflow-hidden shadow-md border border-slate-100">
+                            <div className="mb-6 flex justify-center">
+                                <div className="w-32 h-32 rounded-2xl overflow-hidden shadow-lg border border-slate-100">
                                     <Image
                                         src="/assets/loggo.jpg"
                                         alt="Logo Enova"
-                                        width={56}
-                                        height={56}
+                                        width={128}
+                                        height={128}
                                         className="object-contain w-full h-full"
                                         priority
                                     />
                                 </div>
                             </div>
-                            <h1 className="text-4xl lg:text-5xl font-black tracking-tighter mb-2 text-slate-900 leading-tight">
+                            <h1 className="text-4xl lg:text-5xl font-black tracking-tighter mb-2 text-slate-900 leading-tight text-center">
                                 Espace <span className="text-indigo-600">Connexion</span>
                             </h1>
                         </div>
