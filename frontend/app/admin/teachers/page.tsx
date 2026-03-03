@@ -323,82 +323,89 @@ const TeachersContent = () => {
             </div>
 
             {/* Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                 {filteredTeachers.map(teacher => (
-                    <div key={teacher.id} className="group bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-lg transition-all duration-300">
-                        <div className="flex justify-between items-start mb-4">
-                            <div className="flex items-center gap-3">
-                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-indigo-500/20 bg-gradient-to-br ${['from-pink-500 to-rose-500', 'from-purple-500 to-indigo-500', 'from-cyan-500 to-blue-500', 'from-emerald-500 to-teal-500', 'from-amber-500 to-orange-500'][teacher.name.length % 5]
-                                    }`}>
-                                    {teacher.name.charAt(0)}
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-lg text-gray-900 group-hover:text-blue-600 transition-colors">{teacher.name}</h3>
-                                    <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
-                                        <Mail size={12} className="text-orange-400" />
-                                        {teacher.email}
-                                    </div>
-                                </div>
+                    <div key={teacher.id} className="group bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all duration-200 overflow-hidden flex flex-col">
+
+                        {/* ── Card Header ── */}
+                        <div className="p-4 flex items-center gap-3 min-w-0">
+                            {/* Avatar */}
+                            <div className={`w-11 h-11 rounded-xl flex-shrink-0 flex items-center justify-center text-white font-black text-lg shadow-md bg-gradient-to-br ${['from-pink-500 to-rose-500', 'from-purple-500 to-indigo-500', 'from-cyan-500 to-blue-500', 'from-emerald-500 to-teal-500', 'from-amber-500 to-orange-500'][teacher.name.length % 5]}`}>
+                                {teacher.name.charAt(0)}
                             </div>
-                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onClick={() => handleOpenModal(teacher)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"><Edit size={16} /></button>
-                                <button onClick={() => handleDelete(teacher.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg"><Trash2 size={16} /></button>
+                            {/* Name + email */}
+                            <div className="flex-1 min-w-0">
+                                <h3 className="font-bold text-gray-900 text-sm leading-tight truncate group-hover:text-blue-600 transition-colors">{teacher.name}</h3>
+                                {teacher.email ? (
+                                    <p className="flex items-center gap-1 text-[11px] text-gray-400 mt-0.5 min-w-0">
+                                        <Mail size={10} className="text-orange-400 flex-shrink-0" />
+                                        <span className="truncate">{teacher.email}</span>
+                                    </p>
+                                ) : (
+                                    <p className="text-[11px] text-gray-300 italic mt-0.5">Aucun email</p>
+                                )}
+                            </div>
+                            {/* Edit / Delete */}
+                            <div className="flex gap-0.5 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onClick={() => handleOpenModal(teacher)} className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"><Edit size={14} /></button>
+                                <button onClick={() => handleDelete(teacher.id)} className="p-1.5 text-red-400 hover:bg-red-50 rounded-lg transition-colors"><Trash2 size={14} /></button>
                             </div>
                         </div>
 
-                        <div className="space-y-3 mb-4">
-                            <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-2 rounded-lg border border-gray-100">
-                                <Phone size={14} className="text-green-500" />
-                                <span>{teacher.phone || 'Non renseigné'}</span>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                                {teacher.specialties.map((s, idx) => (
-                                    <span key={s} className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border ${['bg-blue-50 text-blue-700 border-blue-100', 'bg-purple-50 text-purple-700 border-purple-100', 'bg-rose-50 text-rose-700 border-rose-100', 'bg-amber-50 text-amber-700 border-amber-100'][idx % 4]
-                                        }`}>
+                        {/* ── Info row ── */}
+                        <div className="px-4 pb-3 flex items-center gap-3 text-xs text-gray-500">
+                            <span className="flex items-center gap-1 min-w-0">
+                                <Phone size={11} className="text-green-500 flex-shrink-0" />
+                                <span className="truncate">{teacher.phone || '—'}</span>
+                            </span>
+                            <span className="flex items-center gap-1 flex-shrink-0">
+                                <User size={11} className="text-indigo-400" />
+                                {teacher._count?.groups || 0} gr.
+                            </span>
+                            <span className="ml-auto flex-shrink-0 font-bold text-gray-700 text-xs">
+                                {teacher.paymentType === 'PERCENTAGE'
+                                    ? `${teacher.commission}%/ins`
+                                    : `${teacher.hourlyRate} MAD${teacher.paymentType === 'HOURLY' ? '/h' : ''}`}
+                            </span>
+                        </div>
+
+                        {/* ── Specialties ── */}
+                        {teacher.specialties.length > 0 && (
+                            <div className="px-4 pb-3 flex flex-wrap gap-1.5">
+                                {teacher.specialties.slice(0, 4).map((s, idx) => (
+                                    <span key={s} className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold ${['bg-blue-50 text-blue-700', 'bg-purple-50 text-purple-700', 'bg-rose-50 text-rose-700', 'bg-amber-50 text-amber-700'][idx % 4]}`}>
                                         {isFormationMode && getSubjectIcon(s)}
                                         {s}
                                     </span>
                                 ))}
+                                {teacher.specialties.length > 4 && (
+                                    <span className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-gray-100 text-gray-500">+{teacher.specialties.length - 4}</span>
+                                )}
                             </div>
-                        </div>
+                        )}
 
-                        <div className="pt-4 border-t border-gray-100 flex justify-between items-center text-sm">
-                            <span className="flex items-center gap-1 text-gray-500">
-                                <User size={14} className="text-indigo-400" />
-                                {teacher._count?.groups || 0} Groupes
-                            </span>
-                            <div className="text-right">
-                                <p className={`font-bold ${isFormationMode ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600' : 'text-gray-900'}`}>
-                                    {teacher.paymentType === 'PERCENTAGE'
-                                        ? `${teacher.commission}% / Ins.`
-                                        : `${teacher.hourlyRate} MAD${teacher.paymentType === 'HOURLY' ? '/h' : ''}`}
-                                </p>
-                                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">{teacher.paymentType}</p>
-                            </div>
-                        </div>
+                        {/* ── Actions ── */}
+                        <div className="mt-auto px-4 pb-4 pt-2 border-t border-gray-50 space-y-2">
+                            <button
+                                onClick={() => router.push(`/admin/teachers/dashboard?id=${teacher.id}`)}
+                                className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-black font-bold text-xs transition-all shadow-sm shadow-amber-200/50"
+                            >
+                                <LayoutDashboard size={13} />
+                                Tableau de bord
+                            </button>
 
-                        <button
-                            onClick={() => router.push(`/admin/teachers/dashboard?id=${teacher.id}`)}
-                            className="mt-3 w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-black font-bold text-sm transition-all shadow-sm shadow-amber-300/30"
-                        >
-                            <LayoutDashboard size={15} />
-                            Tableau de bord
-                        </button>
-
-                        {/* ── Login Account Management ── */}
-                        <div className="mt-3 border-t border-slate-100 pt-3">
+                            {/* Login account */}
                             {teacher.loginEnabled ? (
-                                <div className="flex items-center justify-between">
-                                    <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
-                                        <ShieldCheck size={14} />
-                                        Compte actif
+                                <div className="flex items-center justify-between px-1">
+                                    <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                                        <ShieldCheck size={12} /> Compte actif
                                     </span>
                                     <button
                                         onClick={() => handleDisableTeacherLogin(teacher.id)}
                                         disabled={!!disableLoading[teacher.id]}
-                                        className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 font-medium transition disabled:opacity-50"
+                                        className="flex items-center gap-1 text-[11px] text-red-400 hover:text-red-600 font-medium transition disabled:opacity-50"
                                     >
-                                        {disableLoading[teacher.id] ? <Loader2 size={12} className="animate-spin" /> : <ShieldOff size={12} />}
+                                        {disableLoading[teacher.id] ? <Loader2 size={11} className="animate-spin" /> : <ShieldOff size={11} />}
                                         Désactiver
                                     </button>
                                 </div>
@@ -406,9 +413,9 @@ const TeachersContent = () => {
                                 <button
                                     onClick={() => openPasswordModal(teacher)}
                                     disabled={loginEnabledCount >= 20}
-                                    className="w-full flex items-center justify-center gap-1.5 py-2 text-xs text-slate-500 hover:text-slate-800 hover:bg-slate-50 border border-dashed border-slate-200 hover:border-slate-400 rounded-lg transition disabled:opacity-40 disabled:cursor-not-allowed font-medium"
+                                    className="w-full flex items-center justify-center gap-1.5 py-1.5 text-[11px] text-slate-500 hover:text-slate-800 hover:bg-slate-50 border border-dashed border-slate-200 hover:border-slate-400 rounded-lg transition disabled:opacity-40 disabled:cursor-not-allowed font-medium"
                                 >
-                                    <Key size={12} />
+                                    <Key size={11} />
                                     {loginEnabledCount >= 20 ? 'Limite 20 atteinte' : 'Activer compte connexion'}
                                 </button>
                             )}
