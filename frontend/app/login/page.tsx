@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
-import useAuthStore from '../../store/useAuthStore';
+import { useAuthStore, setAccessToken } from '../../store/useAuthStore';
+import { setTeacherToken } from '../../store/useTeacherAuthStore';
 import { useRouter } from 'next/navigation';
 import { useSchoolProfile } from '@/hooks/useSchoolProfile';
 import { GraduationCap, X } from 'lucide-react';
@@ -12,28 +13,45 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
-    const login = useAuthStore(state => state.login);
     const { profile, loading } = useSchoolProfile();
 
     useEffect(() => {
-        const token = (typeof window !== 'undefined') ? localStorage.getItem('accessToken') : null;
-        if (token) {
-            // Already logged in logic
+        if (typeof window !== 'undefined') {
+            if (localStorage.getItem('accessToken')) router.replace('/admin');
+            else if (localStorage.getItem('teacherToken')) router.replace('/teacher/dashboard');
         }
     }, [router]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
-        const res = await login(email.trim(), password);
-        if (!res.success) return setError(res.message || 'Login failed');
+        try {
+            const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+            const res = await fetch(`${baseURL}/api/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email.trim(), password }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || data.message || 'Login failed');
 
-        const user = useAuthStore.getState().user;
-        if (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') router.push('/admin');
-        else if (user?.role === 'SECRETARY') router.push('/secretary');
-        else {
-            // Unknown role, stay on login with error
-            setError('Rôle utilisateur non reconnu. Contactez l\'administrateur.');
+            const token = data.data?.token;
+            const user = data.data?.user;
+
+            if (user?.role === 'TEACHER') {
+                // Store teacher token and redirect to teacher space
+                setTeacherToken(token);
+                router.push('/teacher/dashboard');
+            } else {
+                // Admin / Secretary
+                setAccessToken(token);
+                useAuthStore.setState({ user, accessToken: token, loading: false });
+                if (user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') router.push('/admin');
+                else if (user?.role === 'SECRETARY') router.push('/secretary');
+                else setError('Rôle utilisateur non reconnu.');
+            }
+        } catch (err: any) {
+            setError(err.message || 'Email ou mot de passe incorrect.');
         }
     };
 
