@@ -37,25 +37,18 @@ RUN npx prisma generate
 # Build backend first
 RUN npm run build:backend
 
-# Build frontend with explicit verification
-RUN echo "🔨 Starting frontend build..." && \
-    cd frontend && \
+# Build frontend
+RUN cd frontend && \
     npm ci --include=dev && \
     npm run build && \
-    echo "✅ Frontend build completed" && \
-    echo "📁 Frontend working directory contents:" && \
-    ls -la && \
-    echo "📁 Checking for dist directory:" && \
-    ls -la dist/ || echo "dist not found, checking .next:" && \
-    ls -la .next/ || echo "Neither dist nor .next found" && \
-    echo "📄 Frontend index.html check:" && \
-    (ls -la dist/index.html || ls -la .next/index.html || echo "No index.html found")
+    echo "✅ Frontend build done" && \
+    ls -la dist/index.html
 
 # Verify the complete application build
 RUN echo "🔍 Verifying final build structure:" && \
     ls -la /app/ && \
     echo "Frontend dist:" && \
-    ls -la /app/frontend/dist/ || echo "frontend/dist not found (build may have failed)"
+    ls -la /app/frontend/dist/index.html
 
 # Now safely remove development dependencies to reduce image size
 RUN npm prune --production && npm cache clean --force
@@ -66,16 +59,15 @@ RUN echo "📁 Frontend dist contents:" && ls -la /app/frontend/dist/ || echo "N
 RUN echo "📁 App directory contents:" && ls -la /app/
 
 # Remove frontend source files but keep dist - be more specific to avoid accidents
-RUN rm -rf /app/frontend/src || true
-RUN rm -rf /app/frontend/app || true 
-RUN rm -rf /app/frontend/components || true
-RUN rm -rf /app/frontend/hooks || true
-RUN rm -rf /app/frontend/lib || true
-RUN rm -rf /app/frontend/store || true
-RUN rm -rf /app/frontend/types || true
-RUN rm -rf /app/frontend/utils || true
-RUN rm -rf /app/frontend/node_modules || true
-RUN rm -rf /app/frontend/.next || true
+RUN rm -rf /app/frontend/src 2>/dev/null || true
+RUN rm -rf /app/frontend/app 2>/dev/null || true
+RUN rm -rf /app/frontend/components 2>/dev/null || true
+RUN rm -rf /app/frontend/hooks 2>/dev/null || true
+RUN rm -rf /app/frontend/lib 2>/dev/null || true
+RUN rm -rf /app/frontend/store 2>/dev/null || true
+RUN rm -rf /app/frontend/types 2>/dev/null || true
+RUN rm -rf /app/frontend/utils 2>/dev/null || true
+RUN rm -rf /app/frontend/node_modules 2>/dev/null || true
 
 # Final verification after cleanup
 RUN echo "📁 After cleanup - Frontend dist:" && ls -la /app/frontend/dist/ || echo "Frontend dist not found after cleanup"
