@@ -212,13 +212,19 @@ export default function TeacherDashboardPage() {
         <div className="min-h-screen bg-gray-50">
             {/* Header Banner */}
             <div className="bg-gradient-to-r from-[#1e293b] via-[#2e3b4e] to-[#1e293b] text-white">
-                <div className="px-6 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg overflow-hidden bg-white/10 flex items-center justify-center flex-shrink-0">
-                            <Image src="/assets/logo-enova.jpg" alt="Enovazone Logo" width={36} height={36} className="object-cover w-full h-full" />
+                <div className="px-6 py-4 flex items-center justify-between relative">
+                    {/* Left spacer to balance logout button */}
+                    <div className="w-24" />
+
+                    {/* Center: Logo */}
+                    <div className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center gap-1">
+                        <div className="w-14 h-14 rounded-xl overflow-hidden bg-white shadow-lg flex items-center justify-center">
+                            <Image src="/assets/loggo.jpg" alt="Enovazone Logo" width={56} height={56} className="object-contain w-full h-full" />
                         </div>
-                        <span className="text-sm text-amber-300 font-semibold">Espace Formateur</span>
+                        <span className="text-xs text-amber-300 font-semibold tracking-wide">Espace Formateur</span>
                     </div>
+
+                    {/* Right: Logout */}
                     <button
                         onClick={logout}
                         className="flex items-center gap-2 text-sm text-slate-400 hover:text-red-400 transition font-medium"
