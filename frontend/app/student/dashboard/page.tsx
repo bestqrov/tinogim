@@ -12,11 +12,11 @@ import {
 import { useStudentAuthStore, getStudentToken } from '@/store/useStudentAuthStore';
 
 /* ── helpers ── */
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 async function fetchPortal() {
     const token = getStudentToken() || (typeof window !== 'undefined' ? localStorage.getItem('studentToken') : null);
-    const res = await fetch(`${API}/api/student/portal/me`, {
+    const res = await fetch(`${API}/student/portal/me`, {
         headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) throw new Error('Session expirée');

@@ -56,9 +56,9 @@ export default function StudentsPage() {
         setCredSaving(true);
         setCredMsg(null);
         try {
-            const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+            const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
             const token = localStorage.getItem('token');
-            const res = await fetch(`${base}/api/students/${credentialStudent.id}/enable-login`, {
+            const res = await fetch(`${base}/students/${credentialStudent.id}/enable-login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify(credForm),

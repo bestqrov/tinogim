@@ -41,8 +41,8 @@ export const useStudentAuthStore = create<StudentAuthState>((set) => ({
     login: async (username: string, password: string) => {
         try {
             set({ loading: true });
-            const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-            const res = await fetch(`${base}/api/auth/login`, {
+            const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+            const res = await fetch(`${base}/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email: username, password }),
@@ -71,8 +71,8 @@ export const useStudentAuthStore = create<StudentAuthState>((set) => ({
     getMe: async () => {
         try {
             if (!_studentToken) return;
-            const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-            const res = await fetch(`${base}/api/auth/me`, {
+            const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+            const res = await fetch(`${base}/auth/me`, {
                 headers: { Authorization: `Bearer ${_studentToken}` },
             });
             if (!res.ok) { setStudentToken(null); set({ student: null, studentToken: null, loading: false }); return; }
