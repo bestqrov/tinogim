@@ -46,6 +46,7 @@ async function main() {
         },
     });
 
+
     console.log('✅ Admin account created:', {
         email: admin.email,
         name: admin.name,

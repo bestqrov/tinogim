@@ -48,8 +48,8 @@ export const useTeacherAuthStore = create<TeacherAuthState>((set) => ({
     login: async (email: string, password: string) => {
         try {
             set({ loading: true });
-            const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-            const res = await fetch(`${baseURL}/api/teachers/login`, {
+            const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+            const res = await fetch(`${baseURL}/teachers/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),

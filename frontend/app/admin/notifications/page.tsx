@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Bell, Plus, Trash2, Info, AlertTriangle, Zap, Send } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 const TYPE_CONFIG: Record<string, { label: string; color: string; icon: any }> = {
     INFO:    { label: 'Information', color: 'bg-blue-50 text-blue-700 border-blue-100', icon: Info },
@@ -22,7 +22,7 @@ export default function AdminNotificationsPage() {
     const load = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API}/api/notifications`, { headers: { Authorization: `Bearer ${token}` } });
+            const res = await fetch(`${API}/notifications`, { headers: { Authorization: `Bearer ${token}` } });
             const data = await res.json();
             setNotifications(data.data || []);
         } catch {}
@@ -36,7 +36,7 @@ export default function AdminNotificationsPage() {
         if (!form.title || !form.message) return;
         setSaving(true);
         try {
-            await fetch(`${API}/api/notifications`, {
+            await fetch(`${API}/notifications`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({ ...form, targetAll: true }),
@@ -50,7 +50,7 @@ export default function AdminNotificationsPage() {
 
     const handleDelete = async (id: string) => {
         if (!confirm('Supprimer ce message ?')) return;
-        await fetch(`${API}/api/notifications/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+        await fetch(`${API}/notifications/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
         setNotifications(prev => prev.filter(n => n.id !== id));
     };
 
