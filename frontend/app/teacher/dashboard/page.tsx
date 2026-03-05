@@ -31,6 +31,7 @@ interface Group {
     subject?: string;
     level?: string;
     room?: string;
+    whatsappUrl?: string;
     timeSlots?: { day: string; startTime: string; endTime: string }[];
     students: StudentInGroup[];
     _count: { students: number };
@@ -751,21 +752,22 @@ export default function TeacherDashboardPage() {
                                                 </div>
                                                 <div className="flex items-center gap-1 flex-shrink-0">
                                                     {(() => {
-                                                        const whatsappText = encodeURIComponent(
+                                                        const message =
                                                             `${isExam ? '📝 Examen' : '📚 Cours'} - ${item.title}` +
                                                             `\n📅 ${new Date(item.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}` +
                                                             (item.duration ? `\n⏱ Durée : ${item.duration}` : '') +
                                                             (grp ? `\n👥 Groupe : ${grp.name}` : '') +
                                                             (item.description ? `\n\n${item.description}` : '') +
-                                                            (item.note ? `\n\n📌 ${item.note}` : '')
-                                                        );
-                                                        const href = `https://wa.me/?text=${whatsappText}`;
+                                                            (item.note ? `\n\n📌 ${item.note}` : '');
+                                                        const shareHref = grp?.whatsappUrl
+                                                            ? `${grp.whatsappUrl}`
+                                                            : `https://wa.me/?text=${encodeURIComponent(message)}`;
                                                         return (
-                                                            <a href={href} target="_blank" rel="noopener noreferrer"
-                                                                title="Partager sur WhatsApp"
+                                                            <a href={shareHref} target="_blank" rel="noopener noreferrer"
+                                                                title={grp?.whatsappUrl ? `Partager dans le groupe WhatsApp : ${grp.name}` : 'Partager sur WhatsApp'}
                                                                 className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-green-100 hover:bg-green-500 text-green-700 hover:text-white transition-colors text-xs font-bold">
                                                                 <MessageCircle size={13} />
-                                                                <span>WA</span>
+                                                                <span>{grp?.whatsappUrl ? 'Groupe WA' : 'WA'}</span>
                                                             </a>
                                                         );
                                                     })()}
