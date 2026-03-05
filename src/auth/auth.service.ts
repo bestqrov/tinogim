@@ -88,11 +88,14 @@ export const loginUser = async (data: LoginData) => {
         };
     }
 
-    // Fall back to Parent login (parentLoginEnabled accounts only, by parentUsername)
+    // Fall back to Parent login (parentLoginEnabled accounts only, by parentUsername or parentEmail)
     const parentStudent = await prisma.student.findFirst({
         where: {
-            parentUsername: email.toLowerCase(),
             parentLoginEnabled: true,
+            OR: [
+                { parentUsername: email.toLowerCase() },
+                { parentEmail: email.toLowerCase() },
+            ],
         },
     });
 

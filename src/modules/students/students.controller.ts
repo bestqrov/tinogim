@@ -177,7 +177,7 @@ export const disableLogin = async (req: Request, res: Response): Promise<void> =
 export const enableParentLogin = async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
-        const { username, password } = req.body;
+        const { username, password, parentEmail } = req.body;
 
         if (!username || !password) {
             sendError(res, 'Username and password are required', 'Validation error', 400);
@@ -185,19 +185,37 @@ export const enableParentLogin = async (req: Request, res: Response): Promise<vo
         }
 
         // Check username not taken by another parent
-        const existing = await prisma.student.findFirst({
+        const existingUsername = await prisma.student.findFirst({
             where: { parentUsername: username.toLowerCase(), NOT: { id } },
         });
-        if (existing) {
+        if (existingUsername) {
             sendError(res, 'Ce nom d\'utilisateur parent est déjà pris.', 'Conflict', 400);
             return;
         }
 
+        // Check parentEmail not taken by another parent (if provided)
+        if (parentEmail) {
+            const existingEmail = await prisma.student.findFirst({
+                where: { parentEmail: parentEmail.toLowerCase(), NOT: { id } },
+            });
+            if (existingEmail) {
+                sendError(res, 'Cette adresse email parent est déjà utilisée.', 'Conflict', 400);
+                return;
+            }
+        }
+
         const hashed = await bcrypt.hash(password, 10);
+        const updateData: any = {
+            parentUsername: username.toLowerCase(),
+            parentPassword: hashed,
+            parentLoginEnabled: true,
+        };
+        if (parentEmail) updateData.parentEmail = parentEmail.toLowerCase();
+
         const student = await prisma.student.update({
             where: { id },
-            data: { parentUsername: username.toLowerCase(), parentPassword: hashed, parentLoginEnabled: true },
-            select: { id: true, name: true, surname: true, parentUsername: true, parentLoginEnabled: true, parentName: true, parentRelation: true },
+            data: updateData,
+            select: { id: true, name: true, surname: true, parentUsername: true, parentEmail: true, parentLoginEnabled: true, parentName: true, parentRelation: true },
         });
 
         sendSuccess(res, student, 'Accès portail parent activé avec succès', 200);

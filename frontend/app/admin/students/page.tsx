@@ -77,13 +77,13 @@ export default function StudentsPage() {
 
     // Parent portal activation state
     const [parentCredStudent, setParentCredStudent] = useState<any>(null);
-    const [parentCredForm, setParentCredForm] = useState({ username: '', password: '' });
+    const [parentCredForm, setParentCredForm] = useState({ username: '', password: '', parentEmail: '' });
     const [parentCredSaving, setParentCredSaving] = useState(false);
     const [parentCredMsg, setParentCredMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
     const handleEnableParentPortal = (student: any) => {
         const defaultUsername = ('parent_' + student.name[0] + student.surname).toLowerCase().replace(/\s+/g, '');
-        setParentCredForm({ username: defaultUsername, password: '' });
+        setParentCredForm({ username: defaultUsername, password: '', parentEmail: student.parentEmail || '' });
         setParentCredMsg(null);
         setParentCredStudent(student);
     };
@@ -541,6 +541,18 @@ export default function StudentsPage() {
                                 />
                             </div>
                             <div>
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
+                                    Email parent <span className="text-gray-300 normal-case font-normal">(optionnel)</span>
+                                </label>
+                                <input
+                                    type="email"
+                                    value={parentCredForm.parentEmail}
+                                    onChange={e => setParentCredForm(p => ({ ...p, parentEmail: e.target.value }))}
+                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
+                                    placeholder="ex: parent@gmail.com"
+                                />
+                            </div>
+                            <div>
                                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Mot de passe</label>
                                 <input
                                     type="password"
@@ -559,7 +571,7 @@ export default function StudentsPage() {
                                 </div>
                             )}
                             <p className="text-xs text-gray-400 bg-gray-50 p-3 rounded-xl">
-                                Le parent se connecte sur <strong>/parent/login</strong> avec cet identifiant et ce mot de passe pour suivre son enfant.
+                                Le parent se connecte sur <strong>/parent/login</strong> avec l'identifiant <strong>ou l'email</strong> + mot de passe pour suivre son enfant.
                             </p>
                         </div>
                         <div className="flex gap-3 mt-6">

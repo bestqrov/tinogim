@@ -70,6 +70,7 @@ model Student {
   parentLoginEnabled Boolean  @default(false)
   parentPassword     String?  // hashed
   parentUsername     String?  // e.g. parent phone or custom username
+  parentEmail        String?  // parent email for login
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
