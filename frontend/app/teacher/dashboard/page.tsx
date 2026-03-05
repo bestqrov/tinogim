@@ -8,7 +8,8 @@ import {
     Clock, CheckCircle2, XCircle, Activity, Save, RefreshCw,
     Bell, BellRing, Layers, UserCheck, ClipboardList,
     Hash, ChevronDown, ChevronUp, LogOut,
-    Plus, Pencil, Trash2, FileText, FlaskConical, X, MessageCircle
+    Plus, Pencil, Trash2, FileText, FlaskConical, X, MessageCircle,
+    Share2, Copy, Check, ExternalLink
 } from 'lucide-react';
 import { useTeacherAuthStore } from '../../../store/useTeacherAuthStore';
 import { bulkSaveAttendance, getAttendanceByGroup } from '../../../lib/services/attendance';
@@ -99,6 +100,38 @@ export default function TeacherDashboardPage() {
     const [coursForm, setCoursForm] = useState<Partial<CoursItem> & { type: CoursType }>({ type: 'cours', groupId: '', title: '', description: '', date: new Date().toISOString().split('T')[0], duration: '', note: '' });
     const [editingCoursId, setEditingCoursId] = useState<string | null>(null);
     const [showCoursForm, setShowCoursForm] = useState(false);
+    const [sharingCoursId, setSharingCoursId] = useState<string | null>(null);
+    const [copiedCoursId, setCopiedCoursId] = useState<string | null>(null);
+
+    const buildCoursMessage = (item: CoursItem, grp: Group | undefined) => {
+        const isExam = item.type === 'examen';
+        return (
+            `${isExam ? '📝 *Examen*' : '📚 *Cours*'} — *${item.title}*` +
+            `\n📅 ${new Date(item.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}` +
+            (item.duration ? `\n⏱ Durée : ${item.duration}` : '') +
+            (grp ? `\n👥 Groupe : ${grp.name}` : '') +
+            (item.description ? `\n\n${item.description}` : '') +
+            (item.note ? `\n\n📌 ${item.note}` : '')
+        );
+    };
+
+    const copyToClipboard = async (text: string, coursId: string) => {
+        try {
+            await navigator.clipboard.writeText(text);
+            setCopiedCoursId(coursId);
+            setTimeout(() => setCopiedCoursId(null), 2500);
+        } catch {
+            // fallback for older browsers
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            setCopiedCoursId(coursId);
+            setTimeout(() => setCopiedCoursId(null), 2500);
+        }
+    };
 
     // Auth guard + load full profile
     useEffect(() => {
@@ -750,33 +783,87 @@ export default function TeacherDashboardPage() {
                                                     {item.description && <p className="mt-1.5 text-xs text-gray-500 leading-relaxed line-clamp-2">{item.description}</p>}
                                                     {item.note && <p className="mt-1 text-xs text-amber-600 italic">{item.note}</p>}
                                                 </div>
-                                                <div className="flex items-center gap-1 flex-shrink-0">
-                                                    {(() => {
-                                                        const message =
-                                                            `${isExam ? '📝 Examen' : '📚 Cours'} - ${item.title}` +
-                                                            `\n📅 ${new Date(item.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}` +
-                                                            (item.duration ? `\n⏱ Durée : ${item.duration}` : '') +
-                                                            (grp ? `\n👥 Groupe : ${grp.name}` : '') +
-                                                            (item.description ? `\n\n${item.description}` : '') +
-                                                            (item.note ? `\n\n📌 ${item.note}` : '');
-                                                        const shareHref = grp?.whatsappUrl
-                                                            ? `${grp.whatsappUrl}`
-                                                            : `https://wa.me/?text=${encodeURIComponent(message)}`;
+                                                <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                                                    {/* Action buttons row */}
+                                                    <div className="flex items-center gap-1">
+                                                        <button
+                                                            onClick={() => setSharingCoursId(sharingCoursId === item.id ? null : item.id)}
+                                                            title={grp?.whatsappUrl ? `Partager dans le groupe WhatsApp : ${grp.name}` : 'Partager sur WhatsApp'}
+                                                            className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                                                                sharingCoursId === item.id
+                                                                    ? 'bg-green-500 text-white'
+                                                                    : 'bg-green-100 hover:bg-green-500 text-green-700 hover:text-white'
+                                                            }`}
+                                                        >
+                                                            <MessageCircle size={13} />
+                                                            <span>{grp?.whatsappUrl ? 'Groupe WA' : 'WA'}</span>
+                                                        </button>
+                                                        <button onClick={() => editCours(item)} className="w-8 h-8 rounded-lg hover:bg-amber-50 flex items-center justify-center text-gray-400 hover:text-amber-600 transition-colors">
+                                                            <Pencil size={14} />
+                                                        </button>
+                                                        <button onClick={() => deleteCours(item.id)} className="w-8 h-8 rounded-lg hover:bg-red-50 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors">
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    </div>
+
+                                                    {/* Share Popup */}
+                                                    {sharingCoursId === item.id && (() => {
+                                                        const msg = buildCoursMessage(item, grp);
                                                         return (
-                                                            <a href={shareHref} target="_blank" rel="noopener noreferrer"
-                                                                title={grp?.whatsappUrl ? `Partager dans le groupe WhatsApp : ${grp.name}` : 'Partager sur WhatsApp'}
-                                                                className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-green-100 hover:bg-green-500 text-green-700 hover:text-white transition-colors text-xs font-bold">
-                                                                <MessageCircle size={13} />
-                                                                <span>{grp?.whatsappUrl ? 'Groupe WA' : 'WA'}</span>
-                                                            </a>
+                                                            <div className="w-72 bg-white border border-green-200 rounded-2xl shadow-xl p-4 z-10">
+                                                                <div className="flex items-center justify-between mb-3">
+                                                                    <span className="text-xs font-bold text-green-700 flex items-center gap-1.5">
+                                                                        <MessageCircle size={13} /> Partager sur WhatsApp
+                                                                    </span>
+                                                                    <button onClick={() => setSharingCoursId(null)} className="text-gray-400 hover:text-gray-600"><X size={14} /></button>
+                                                                </div>
+
+                                                                {/* Message preview */}
+                                                                <pre className="text-xs text-gray-600 bg-gray-50 rounded-xl p-3 whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto border border-gray-100 mb-3 font-sans">{msg}</pre>
+
+                                                                {/* Action buttons */}
+                                                                <div className="flex flex-col gap-2">
+                                                                    <div className="flex gap-2">
+                                                                        <button
+                                                                            onClick={() => copyToClipboard(msg, item.id)}
+                                                                            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors"
+                                                                        >
+                                                                            {copiedCoursId === item.id
+                                                                                ? <><Check size={13} className="text-green-600" /> Copié !</>
+                                                                                : <><Copy size={13} /> Copier le texte</>
+                                                                            }
+                                                                        </button>
+                                                                        <a
+                                                                            href={`https://wa.me/?text=${encodeURIComponent(msg)}`}
+                                                                            target="_blank"
+                                                                            rel="noopener noreferrer"
+                                                                            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-green-500 hover:bg-green-600 text-white transition-colors"
+                                                                        >
+                                                                            <Share2 size={13} /> Partager
+                                                                        </a>
+                                                                    </div>
+
+                                                                    {/* Open WA Group directly if available */}
+                                                                    {grp?.whatsappUrl && (
+                                                                        <a
+                                                                            href={grp.whatsappUrl}
+                                                                            target="_blank"
+                                                                            rel="noopener noreferrer"
+                                                                            className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition-colors"
+                                                                        >
+                                                                            <ExternalLink size={13} /> Ouvrir le groupe : {grp.name}
+                                                                        </a>
+                                                                    )}
+                                                                </div>
+
+                                                                {grp?.whatsappUrl && (
+                                                                    <p className="text-[10px] text-gray-400 mt-2 text-center">
+                                                                        💡 Copiez le texte, ouvrez le groupe puis collez.
+                                                                    </p>
+                                                                )}
+                                                            </div>
                                                         );
                                                     })()}
-                                                    <button onClick={() => editCours(item)} className="w-8 h-8 rounded-lg hover:bg-amber-50 flex items-center justify-center text-gray-400 hover:text-amber-600 transition-colors">
-                                                        <Pencil size={14} />
-                                                    </button>
-                                                    <button onClick={() => deleteCours(item.id)} className="w-8 h-8 rounded-lg hover:bg-red-50 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors">
-                                                        <Trash2 size={14} />
-                                                    </button>
                                                 </div>
                                             </div>
                                         );
