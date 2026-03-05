@@ -40,6 +40,11 @@ export default function LoginPage() {
                 const { useTeacherAuthStore } = await import('../../store/useTeacherAuthStore');
                 useTeacherAuthStore.setState({ teacher: user, teacherToken: token, loading: false });
                 router.push('/teacher/dashboard');
+            } else if (user?.role === 'STUDENT') {
+                // Redirect students to their own portal
+                const { setStudentToken } = await import('../../store/useStudentAuthStore');
+                setStudentToken(token);
+                router.push('/student/dashboard');
             } else {
                 setAccessToken(token);
                 useAuthStore.setState({ user, accessToken: token, loading: false });
