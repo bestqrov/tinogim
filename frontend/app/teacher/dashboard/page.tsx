@@ -783,20 +783,21 @@ export default function TeacherDashboardPage() {
                                                     {item.description && <p className="mt-1.5 text-xs text-gray-500 leading-relaxed line-clamp-2">{item.description}</p>}
                                                     {item.note && <p className="mt-1 text-xs text-amber-600 italic">{item.note}</p>}
                                                 </div>
-                                                <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                                                    {/* Action buttons row */}
-                                                    <div className="flex items-center gap-1">
+                                                <div className="flex items-center gap-1 flex-shrink-0">
+                                                        {/* WhatsApp share icon button */}
                                                         <button
                                                             onClick={() => setSharingCoursId(sharingCoursId === item.id ? null : item.id)}
-                                                            title={grp?.whatsappUrl ? `Partager dans le groupe WhatsApp : ${grp.name}` : 'Partager sur WhatsApp'}
-                                                            className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                                                            title="Partager sur WhatsApp"
+                                                            className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all shadow-sm ${
                                                                 sharingCoursId === item.id
-                                                                    ? 'bg-green-500 text-white'
-                                                                    : 'bg-green-100 hover:bg-green-500 text-green-700 hover:text-white'
+                                                                    ? 'bg-green-500 text-white scale-110 shadow-green-200'
+                                                                    : 'bg-green-100 text-green-600 hover:bg-green-500 hover:text-white hover:scale-105'
                                                             }`}
                                                         >
-                                                            <MessageCircle size={13} />
-                                                            <span>{grp?.whatsappUrl ? 'Groupe WA' : 'WA'}</span>
+                                                            <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor">
+                                                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                                                                <path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.118 1.535 5.845L.057 23.571a.75.75 0 0 0 .92.92l5.763-1.484A11.946 11.946 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.907 0-3.686-.524-5.21-1.434l-.374-.223-3.875.997.985-3.758-.245-.387A9.953 9.953 0 0 1 2 12c0-5.514 4.486-10 10-10s10 4.486 10 10-4.486 10-10 10z"/>
+                                                            </svg>
                                                         </button>
                                                         <button onClick={() => editCours(item)} className="w-8 h-8 rounded-lg hover:bg-amber-50 flex items-center justify-center text-gray-400 hover:text-amber-600 transition-colors">
                                                             <Pencil size={14} />
@@ -804,66 +805,6 @@ export default function TeacherDashboardPage() {
                                                         <button onClick={() => deleteCours(item.id)} className="w-8 h-8 rounded-lg hover:bg-red-50 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors">
                                                             <Trash2 size={14} />
                                                         </button>
-                                                    </div>
-
-                                                    {/* Share Popup */}
-                                                    {sharingCoursId === item.id && (() => {
-                                                        const msg = buildCoursMessage(item, grp);
-                                                        return (
-                                                            <div className="w-72 bg-white border border-green-200 rounded-2xl shadow-xl p-4 z-10">
-                                                                <div className="flex items-center justify-between mb-3">
-                                                                    <span className="text-xs font-bold text-green-700 flex items-center gap-1.5">
-                                                                        <MessageCircle size={13} /> Partager sur WhatsApp
-                                                                    </span>
-                                                                    <button onClick={() => setSharingCoursId(null)} className="text-gray-400 hover:text-gray-600"><X size={14} /></button>
-                                                                </div>
-
-                                                                {/* Message preview */}
-                                                                <pre className="text-xs text-gray-600 bg-gray-50 rounded-xl p-3 whitespace-pre-wrap leading-relaxed max-h-40 overflow-y-auto border border-gray-100 mb-3 font-sans">{msg}</pre>
-
-                                                                {/* Action buttons */}
-                                                                <div className="flex flex-col gap-2">
-                                                                    <div className="flex gap-2">
-                                                                        <button
-                                                                            onClick={() => copyToClipboard(msg, item.id)}
-                                                                            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors"
-                                                                        >
-                                                                            {copiedCoursId === item.id
-                                                                                ? <><Check size={13} className="text-green-600" /> Copié !</>
-                                                                                : <><Copy size={13} /> Copier le texte</>
-                                                                            }
-                                                                        </button>
-                                                                        <a
-                                                                            href={`https://wa.me/?text=${encodeURIComponent(msg)}`}
-                                                                            target="_blank"
-                                                                            rel="noopener noreferrer"
-                                                                            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-green-500 hover:bg-green-600 text-white transition-colors"
-                                                                        >
-                                                                            <Share2 size={13} /> Partager
-                                                                        </a>
-                                                                    </div>
-
-                                                                    {/* Open WA Group directly if available */}
-                                                                    {grp?.whatsappUrl && (
-                                                                        <a
-                                                                            href={grp.whatsappUrl}
-                                                                            target="_blank"
-                                                                            rel="noopener noreferrer"
-                                                                            className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition-colors"
-                                                                        >
-                                                                            <ExternalLink size={13} /> Ouvrir le groupe : {grp.name}
-                                                                        </a>
-                                                                    )}
-                                                                </div>
-
-                                                                {grp?.whatsappUrl && (
-                                                                    <p className="text-[10px] text-gray-400 mt-2 text-center">
-                                                                        💡 Copiez le texte, ouvrez le groupe puis collez.
-                                                                    </p>
-                                                                )}
-                                                            </div>
-                                                        );
-                                                    })()}
                                                 </div>
                                             </div>
                                         );
@@ -906,6 +847,96 @@ export default function TeacherDashboardPage() {
                     </div>
                 )}
             </div>
+
+            {/* ── WhatsApp Share Modal (fixed overlay) ── */}
+            {sharingCoursId && (() => {
+                const item = coursList.find(c => c.id === sharingCoursId);
+                if (!item) return null;
+                const grp = groups.find(g => g.id === item.groupId);
+                const isExam = item.type === 'examen';
+                const msg = buildCoursMessage(item, grp);
+                return (
+                    <>
+                        {/* Backdrop */}
+                        <div
+                            className="fixed inset-0 bg-black/30 z-40 backdrop-blur-sm"
+                            onClick={() => setSharingCoursId(null)}
+                        />
+                        {/* Modal */}
+                        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
+                            <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden">
+                                {/* Header */}
+                                <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-5 py-4 flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
+                                            <svg viewBox="0 0 24 24" width="20" height="20" fill="white">
+                                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                                                <path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.118 1.535 5.845L.057 23.571a.75.75 0 0 0 .92.92l5.763-1.484A11.946 11.946 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.907 0-3.686-.524-5.21-1.434l-.374-.223-3.875.997.985-3.758-.245-.387A9.953 9.953 0 0 1 2 12c0-5.514 4.486-10 10-10s10 4.486 10 10-4.486 10-10 10z"/>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p className="text-white font-bold text-sm">Partager sur WhatsApp</p>
+                                            <p className="text-white/70 text-xs">{isExam ? '📝 Examen' : '📚 Cours'} — {item.title}</p>
+                                        </div>
+                                    </div>
+                                    <button onClick={() => setSharingCoursId(null)} className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition-colors">
+                                        <X size={16} />
+                                    </button>
+                                </div>
+
+                                {/* Body */}
+                                <div className="p-5 space-y-4">
+                                    {/* Message preview */}
+                                    <div>
+                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Aperçu du message</p>
+                                        <pre className="text-sm text-gray-700 bg-gray-50 rounded-2xl px-4 py-3 whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto border border-gray-100 font-sans">{msg}</pre>
+                                    </div>
+
+                                    {/* Action buttons */}
+                                    <div className="flex gap-3">
+                                        <button
+                                            onClick={() => copyToClipboard(msg, item.id)}
+                                            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-2xl text-sm font-bold border-2 border-gray-200 hover:border-gray-300 bg-white text-gray-700 transition-all"
+                                        >
+                                            {copiedCoursId === item.id
+                                                ? <><Check size={16} className="text-green-500" /> Copié !</>
+                                                : <><Copy size={16} /> Copier</>
+                                            }
+                                        </button>
+                                        <a
+                                            href={`https://wa.me/?text=${encodeURIComponent(msg)}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-2xl text-sm font-bold bg-green-500 hover:bg-green-600 text-white transition-all shadow-md shadow-green-200"
+                                        >
+                                            <Share2 size={16} /> Partager
+                                        </a>
+                                    </div>
+
+                                    {/* Open group link */}
+                                    {grp?.whatsappUrl && (
+                                        <a
+                                            href={grp.whatsappUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl text-sm font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-2 border-emerald-200 transition-all"
+                                        >
+                                            <ExternalLink size={16} />
+                                            Ouvrir le groupe : <span className="font-black">{grp.name}</span>
+                                        </a>
+                                    )}
+
+                                    {grp?.whatsappUrl && (
+                                        <p className="text-center text-xs text-gray-400">
+                                            💡 Copiez le message → ouvrez le groupe → collez et envoyez
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </>
+                );
+            })()}
         </div>
     );
 }
