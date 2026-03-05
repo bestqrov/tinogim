@@ -91,13 +91,15 @@ export default function TeacherDashboardPage() {
         type: CoursType;
         groupId: string;
         title: string;
+        objectif: string;
+        plan: string;
         description: string;
         date: string;
         duration: string;
         note: string;
     }
     const [coursList, setCoursList] = useState<CoursItem[]>([]);
-    const [coursForm, setCoursForm] = useState<Partial<CoursItem> & { type: CoursType }>({ type: 'cours', groupId: '', title: '', description: '', date: new Date().toISOString().split('T')[0], duration: '', note: '' });
+    const [coursForm, setCoursForm] = useState<Partial<CoursItem> & { type: CoursType }>({ type: 'cours', groupId: '', title: '', objectif: '', plan: '', description: '', date: new Date().toISOString().split('T')[0], duration: '', note: '' });
     const [editingCoursId, setEditingCoursId] = useState<string | null>(null);
     const [showCoursForm, setShowCoursForm] = useState(false);
     const [sharingCoursId, setSharingCoursId] = useState<string | null>(null);
@@ -110,7 +112,9 @@ export default function TeacherDashboardPage() {
             `\n📅 ${new Date(item.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}` +
             (item.duration ? `\n⏱ Durée : ${item.duration}` : '') +
             (grp ? `\n👥 Groupe : ${grp.name}` : '') +
-            (item.description ? `\n\n${item.description}` : '') +
+            (item.objectif ? `\n\n🎯 *Objectif :*\n${item.objectif}` : '') +
+            (item.plan ? `\n\n📋 *Plan de la séance :*\n${item.plan}` : '') +
+            (item.description ? `\n\n📝 *Contenu :*\n${item.description}` : '') +
             (item.note ? `\n\n📌 ${item.note}` : '')
         );
     };
@@ -164,7 +168,7 @@ export default function TeacherDashboardPage() {
         } else {
             saveCoursList([...coursList, { ...coursForm, id: Date.now().toString() } as CoursItem]);
         }
-        setCoursForm({ type: 'cours', groupId: '', title: '', description: '', date: new Date().toISOString().split('T')[0], duration: '', note: '' });
+        setCoursForm({ type: 'cours', groupId: '', title: '', objectif: '', plan: '', description: '', date: new Date().toISOString().split('T')[0], duration: '', note: '' });
         setShowCoursForm(false);
     };
 
@@ -727,9 +731,23 @@ export default function TeacherDashboardPage() {
                                             <input value={coursForm.duration || ''} onChange={e => setCoursForm(f => ({ ...f, duration: e.target.value }))}
                                                 placeholder="Ex: 2h" className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-300/30 focus:border-amber-400 outline-none" />
                                         </div>
+                                        {/* Objectif */}
+                                        <div className="sm:col-span-2 xl:col-span-3">
+                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">🎯 Objectif de la séance *</label>
+                                            <input value={coursForm.objectif || ''} onChange={e => setCoursForm(f => ({ ...f, objectif: e.target.value }))}
+                                                placeholder="Ex: Comprendre les fonctions linéaires et savoir tracer leur représentation graphique"
+                                                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-300/30 focus:border-amber-400 outline-none" />
+                                        </div>
+                                        {/* Plan */}
+                                        <div className="sm:col-span-2 xl:col-span-3">
+                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">📋 Plan de la séance</label>
+                                            <textarea value={coursForm.plan || ''} onChange={e => setCoursForm(f => ({ ...f, plan: e.target.value }))}
+                                                rows={3} placeholder={`Ex:\n1. Rappel du cours précédent (10 min)\n2. Introduction des nouvelles notions (20 min)\n3. Exercices d'application (25 min)\n4. Correction et synthèse (5 min)`}
+                                                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-300/30 focus:border-amber-400 outline-none resize-none" />
+                                        </div>
                                         {/* Description */}
                                         <div className="sm:col-span-2 xl:col-span-3">
-                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Description / Contenu</label>
+                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">📝 Contenu détaillé</label>
                                             <textarea value={coursForm.description || ''} onChange={e => setCoursForm(f => ({ ...f, description: e.target.value }))}
                                                 rows={2} placeholder="Décrivez le contenu du cours ou de l'examen..."
                                                 className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-300/30 focus:border-amber-400 outline-none resize-none" />
@@ -743,7 +761,7 @@ export default function TeacherDashboardPage() {
                                     </div>
                                     <div className="mt-4 flex justify-end gap-3">
                                         <button onClick={() => setShowCoursForm(false)} className="px-4 py-2 rounded-xl text-sm font-semibold text-gray-500 bg-gray-100 hover:bg-gray-200 transition-all">Annuler</button>
-                                        <button onClick={submitCoursForm} disabled={!coursForm.title || !coursForm.date || !coursForm.groupId}
+                                        <button onClick={submitCoursForm} disabled={!coursForm.title || !coursForm.date || !coursForm.groupId || !coursForm.objectif}
                                             className="flex items-center gap-2 px-5 py-2 bg-amber-400 hover:bg-amber-500 text-black font-bold text-sm rounded-xl transition-all disabled:opacity-50">
                                             <Save size={14} /> {editingCoursId ? 'Enregistrer les modifications' : 'Ajouter'}
                                         </button>
@@ -780,7 +798,19 @@ export default function TeacherDashboardPage() {
                                                         {item.duration && <span className="flex items-center gap-1"><Clock size={11} />{item.duration}</span>}
                                                         {grp && <span className="flex items-center gap-1"><Layers size={11} />{grp.name}</span>}
                                                     </div>
-                                                    {item.description && <p className="mt-1.5 text-xs text-gray-500 leading-relaxed line-clamp-2">{item.description}</p>}
+                                                    {item.objectif && (
+                                                        <div className="mt-1.5 flex items-start gap-1">
+                                                            <span className="text-xs text-purple-500 font-bold shrink-0">🎯</span>
+                                                            <p className="text-xs text-purple-700 leading-relaxed line-clamp-1">{item.objectif}</p>
+                                                        </div>
+                                                    )}
+                                                    {item.plan && (
+                                                        <div className="mt-1 flex items-start gap-1">
+                                                            <span className="text-xs text-blue-500 font-bold shrink-0">📋</span>
+                                                            <p className="text-xs text-blue-600 leading-relaxed line-clamp-2 whitespace-pre-line">{item.plan}</p>
+                                                        </div>
+                                                    )}
+                                                    {item.description && <p className="mt-1 text-xs text-gray-500 leading-relaxed line-clamp-1">{item.description}</p>}
                                                     {item.note && <p className="mt-1 text-xs text-amber-600 italic">{item.note}</p>}
                                                 </div>
                                                 <div className="flex items-center gap-1 flex-shrink-0">
