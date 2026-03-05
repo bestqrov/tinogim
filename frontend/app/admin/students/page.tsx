@@ -57,7 +57,7 @@ export default function StudentsPage() {
         setCredMsg(null);
         try {
             const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('accessToken');
             const res = await fetch(`${base}/students/${credentialStudent.id}/enable-login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },

@@ -12,7 +12,7 @@ const TYPE_CONFIG: Record<string, { label: string; color: string; icon: any }> =
 };
 
 export default function AdminNotificationsPage() {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
     const [notifications, setNotifications] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);

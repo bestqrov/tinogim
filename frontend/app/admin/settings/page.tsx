@@ -222,7 +222,7 @@ export default function SettingsPage() {
         setSuccess('');
 
         try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('accessToken');
             const data: any = {
                 name: user.name,
                 email: user.email,
