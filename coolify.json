@@ -14,7 +14,8 @@
     "JWT_SECRET": "oikjuyhuimnjhgrfdtebservaertkdh1092837465ge",
     "JWT_EXPIRES_IN": "7d",
     "FRONTEND_URL": "https://arwaeduc.enovazoneacadimeca.com",
-    "APP_URL": "https://arwaeduc.enovazoneacadimeca.com"
+    "APP_URL": "https://arwaeduc.enovazoneacadimeca.com",
+    "NEXT_PUBLIC_API_URL": "/api"
   },
   "healthCheck": {
     "path": "/health",

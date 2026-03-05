@@ -37,7 +37,8 @@ RUN npx prisma generate
 # Build backend first
 RUN npm run build:backend
 
-# Build frontend
+# Build frontend (use relative /api so the browser hits the same origin)
+ENV NEXT_PUBLIC_API_URL=/api
 RUN cd frontend && \
     npm ci --include=dev && \
     npm run build && \
