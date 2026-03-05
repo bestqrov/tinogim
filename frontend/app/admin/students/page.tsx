@@ -20,6 +20,7 @@ import {
     Calendar,
     ArrowRight,
     KeyRound,
+    Heart,
     Check,
     X
 } from 'lucide-react';
@@ -71,6 +72,45 @@ export default function StudentsPage() {
             setCredMsg({ ok: false, text: e.message });
         } finally {
             setCredSaving(false);
+        }
+    };
+
+    // Parent portal activation state
+    const [parentCredStudent, setParentCredStudent] = useState<any>(null);
+    const [parentCredForm, setParentCredForm] = useState({ username: '', password: '' });
+    const [parentCredSaving, setParentCredSaving] = useState(false);
+    const [parentCredMsg, setParentCredMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+    const handleEnableParentPortal = (student: any) => {
+        const defaultUsername = ('parent_' + student.name[0] + student.surname).toLowerCase().replace(/\s+/g, '');
+        setParentCredForm({ username: defaultUsername, password: '' });
+        setParentCredMsg(null);
+        setParentCredStudent(student);
+    };
+
+    const saveParentCredentials = async () => {
+        if (!parentCredForm.username || !parentCredForm.password) {
+            setParentCredMsg({ ok: false, text: 'Renseignez le nom d\'utilisateur et le mot de passe.' });
+            return;
+        }
+        setParentCredSaving(true);
+        setParentCredMsg(null);
+        try {
+            const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+            const token = localStorage.getItem('accessToken');
+            const res = await fetch(`${base}/students/${parentCredStudent.id}/enable-parent-login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify(parentCredForm),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Erreur');
+            setParentCredMsg({ ok: true, text: `Portail parent activé ! Identifiant: ${parentCredForm.username}` });
+            setStudents(prev => prev.map(s => s.id === parentCredStudent.id ? { ...s, parentLoginEnabled: true, parentUsername: parentCredForm.username } : s));
+        } catch (e: any) {
+            setParentCredMsg({ ok: false, text: e.message });
+        } finally {
+            setParentCredSaving(false);
         }
     };
 
@@ -402,6 +442,17 @@ export default function StudentsPage() {
                                                         <KeyRound size={18} />
                                                     </button>
                                                     <button
+                                                        onClick={() => handleEnableParentPortal(student)}
+                                                        className={`w-9 h-9 flex items-center justify-center rounded-xl transition-all ${
+                                                            student.parentLoginEnabled
+                                                                ? 'text-green-500 hover:text-green-700 hover:bg-green-50'
+                                                                : 'text-slate-400 hover:text-green-600 hover:bg-green-50'
+                                                        }`}
+                                                        title={student.parentLoginEnabled ? `Parent actif — ${student.parentUsername}` : 'Activer portail parent'}
+                                                    >
+                                                        <Heart size={18} />
+                                                    </button>
+                                                    <button
                                                         onClick={() => handleEdit(student)}
                                                         className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-xl transition-all"
                                                         title="Modifier"
@@ -465,7 +516,65 @@ export default function StudentsPage() {
                 />
             )}
 
-            {/* Credentials Modal */}
+            {/* Parent Credentials Modal */}
+            {parentCredStudent && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={() => setParentCredStudent(null)}>
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center justify-between mb-5">
+                            <div>
+                                <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
+                                    <Heart size={20} className="text-green-600" />
+                                    Portail Parent
+                                </h3>
+                                <p className="text-sm text-gray-400 mt-0.5">Parent de : {parentCredStudent.name} {parentCredStudent.surname}</p>
+                            </div>
+                            <button onClick={() => setParentCredStudent(null)} className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-100"><X size={18} /></button>
+                        </div>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Identifiant parent (username)</label>
+                                <input
+                                    value={parentCredForm.username}
+                                    onChange={e => setParentCredForm(p => ({ ...p, username: e.target.value }))}
+                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
+                                    placeholder="ex: parent_mbouazza"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Mot de passe</label>
+                                <input
+                                    type="password"
+                                    value={parentCredForm.password}
+                                    onChange={e => setParentCredForm(p => ({ ...p, password: e.target.value }))}
+                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500"
+                                    placeholder="Choisir un mot de passe"
+                                />
+                            </div>
+                            {parentCredMsg && (
+                                <div className={`p-3 rounded-xl text-sm font-medium flex items-center gap-2 ${
+                                    parentCredMsg.ok ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'
+                                }`}>
+                                    {parentCredMsg.ok ? <Check size={16} /> : <X size={16} />}
+                                    {parentCredMsg.text}
+                                </div>
+                            )}
+                            <p className="text-xs text-gray-400 bg-gray-50 p-3 rounded-xl">
+                                Le parent se connecte sur <strong>/parent/login</strong> avec cet identifiant et ce mot de passe pour suivre son enfant.
+                            </p>
+                        </div>
+                        <div className="flex gap-3 mt-6">
+                            <button onClick={() => setParentCredStudent(null)} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-gray-600 hover:bg-gray-50">Annuler</button>
+                            <button
+                                onClick={saveParentCredentials}
+                                disabled={parentCredSaving}
+                                className="flex-1 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-bold disabled:opacity-60"
+                            >{parentCredSaving ? 'Enregistrement...' : 'Activer portail parent'}</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Student Credentials Modal */}
             {credentialStudent && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={() => setCredentialStudent(null)}>
                     <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>

@@ -18,6 +18,7 @@ import groupsRoutes from './modules/groups/groups.routes';
 import teachersRoutes from './modules/teachers/teachers.routes';
 import transactionsRoutes from './modules/transactions/transactions.routes';
 import studentPortalRoutes from './modules/student-portal/student-portal.routes';
+import parentPortalRoutes from './modules/parent-portal/parent-portal.routes';
 import notificationsRoutes from './modules/notifications/notifications.routes';
 
 const app: Application = express();
@@ -57,6 +58,7 @@ apiRouter.use('/groups', groupsRoutes);
 apiRouter.use('/teachers', teachersRoutes);
 apiRouter.use('/transactions', transactionsRoutes);
 apiRouter.use('/student/portal', studentPortalRoutes);
+apiRouter.use('/parent/portal', parentPortalRoutes);
 apiRouter.use('/notifications', notificationsRoutes);
 
 app.use('/api', apiRouter);

@@ -172,3 +172,50 @@ export const disableLogin = async (req: Request, res: Response): Promise<void> =
         sendError(res, error.message, 'Failed', 500);
     }
 };
+
+// POST /api/students/:id/enable-parent-login — admin creates parent portal credentials
+export const enableParentLogin = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        const { username, password } = req.body;
+
+        if (!username || !password) {
+            sendError(res, 'Username and password are required', 'Validation error', 400);
+            return;
+        }
+
+        // Check username not taken by another parent
+        const existing = await prisma.student.findFirst({
+            where: { parentUsername: username.toLowerCase(), NOT: { id } },
+        });
+        if (existing) {
+            sendError(res, 'Ce nom d\'utilisateur parent est déjà pris.', 'Conflict', 400);
+            return;
+        }
+
+        const hashed = await bcrypt.hash(password, 10);
+        const student = await prisma.student.update({
+            where: { id },
+            data: { parentUsername: username.toLowerCase(), parentPassword: hashed, parentLoginEnabled: true },
+            select: { id: true, name: true, surname: true, parentUsername: true, parentLoginEnabled: true, parentName: true, parentRelation: true },
+        });
+
+        sendSuccess(res, student, 'Accès portail parent activé avec succès', 200);
+    } catch (error: any) {
+        sendError(res, error.message, 'Failed to enable parent login', 500);
+    }
+};
+
+// POST /api/students/:id/disable-parent-login — revoke parent portal access
+export const disableParentLogin = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        await prisma.student.update({
+            where: { id },
+            data: { parentLoginEnabled: false },
+        });
+        sendSuccess(res, null, 'Accès portail parent désactivé', 200);
+    } catch (error: any) {
+        sendError(res, error.message, 'Failed', 500);
+    }
+};

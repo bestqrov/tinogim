@@ -66,6 +66,11 @@ model Student {
   password      String?   // hashed
   username      String?   // e.g. first initial + surname
 
+  // Parent portal login (admin-managed)
+  parentLoginEnabled Boolean  @default(false)
+  parentPassword     String?  // hashed
+  parentUsername     String?  // e.g. parent phone or custom username
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 

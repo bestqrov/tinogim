@@ -4,6 +4,7 @@ import Input from '../../components/Input';
 import Button from '../../components/Button';
 import { useAuthStore, setAccessToken } from '../../store/useAuthStore';
 import { setTeacherToken } from '../../store/useTeacherAuthStore';
+import { setParentToken } from '../../store/useParentAuthStore';
 import { useRouter } from 'next/navigation';
 import { useSchoolProfile } from '@/hooks/useSchoolProfile';
 import Image from 'next/image';
@@ -45,6 +46,12 @@ export default function LoginPage() {
                 const { setStudentToken } = await import('../../store/useStudentAuthStore');
                 setStudentToken(token);
                 router.push('/student/dashboard');
+            } else if (user?.role === 'PARENT') {
+                // Redirect parents to their portal
+                setParentToken(token);
+                const { useParentAuthStore } = await import('../../store/useParentAuthStore');
+                useParentAuthStore.setState({ parent: user, parentToken: token, loading: false });
+                router.push('/parent/dashboard');
             } else {
                 setAccessToken(token);
                 useAuthStore.setState({ user, accessToken: token, loading: false });

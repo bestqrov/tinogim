@@ -88,5 +88,36 @@ export const loginUser = async (data: LoginData) => {
         };
     }
 
+    // Fall back to Parent login (parentLoginEnabled accounts only, by parentUsername)
+    const parentStudent = await prisma.student.findFirst({
+        where: {
+            parentUsername: email.toLowerCase(),
+            parentLoginEnabled: true,
+        },
+    });
+
+    if (parentStudent && parentStudent.parentPassword) {
+        const isPasswordValid = await comparePassword(password, parentStudent.parentPassword);
+        if (!isPasswordValid) {
+            throw new Error('Invalid email or password');
+        }
+        const token = generateToken({
+            id: parentStudent.id,
+            email: parentStudent.email || parentStudent.parentUsername || '',
+            role: 'PARENT',
+            name: parentStudent.parentName || `Parent de ${parentStudent.name} ${parentStudent.surname}`,
+        });
+        return {
+            token,
+            user: {
+                id: parentStudent.id,
+                parentUsername: parentStudent.parentUsername,
+                name: parentStudent.parentName || `Parent de ${parentStudent.name} ${parentStudent.surname}`,
+                childName: `${parentStudent.name} ${parentStudent.surname}`,
+                role: 'PARENT',
+            },
+        };
+    }
+
     throw new Error('Invalid email or password');
 };
