@@ -55,6 +55,12 @@ interface TeacherDetail {
 
 type Tab = 'profil' | 'groupes' | 'presence' | 'cours' | 'notifications';
 
+type CoursType = 'cours' | 'examen';
+interface CoursItem {
+    id: string; type: CoursType; groupId: string; title: string;
+    objectif: string; plan: string; description: string; date: string; duration: string; note: string;
+}
+
 const DAYS_FR: Record<string, string> = {
     'الأحد': 'Dimanche', 'الاثنين': 'Lundi', 'الثلاثاء': 'Mardi',
     'الأربعاء': 'Mercredi', 'الخميس': 'Jeudi', 'الجمعة': 'Vendredi', 'السبت': 'Samedi',
@@ -62,10 +68,113 @@ const DAYS_FR: Record<string, string> = {
     'Wednesday': 'Mercredi', 'Thursday': 'Jeudi', 'Friday': 'Vendredi', 'Saturday': 'Samedi',
 };
 
+// ─── Mock Data (set to false to use real API) ───────────────────────
+const MOCK_MODE = false;
+
+const MOCK_TEACHER: TeacherDetail = {
+    id: 'mock-teacher-1',
+    name: 'أستاذ يوسف بنعلي',
+    email: 'youssef@enovaacademy.ma',
+    phone: '0661234567',
+    cin: 'BE123456',
+    gender: 'male',
+    status: 'active',
+    specialties: ['Mathématiques', 'Physique'],
+    levels: ['Terminale', '1ère Bac'],
+    socialMedia: { whatsapp: '212661234567' },
+    _count: { groups: 2 },
+    groups: [
+        {
+            id: 'grp-1',
+            name: 'Groupe Maths Terminale A',
+            type: 'regular',
+            subject: 'Mathématiques',
+            level: 'Terminale',
+            room: 'Salle 3',
+            whatsappUrl: 'https://chat.whatsapp.com/example1',
+            timeSlots: [
+                { day: 'Lundi', startTime: '14:00', endTime: '16:00' },
+                { day: 'Jeudi', startTime: '16:00', endTime: '18:00' },
+            ],
+            _count: { students: 4 },
+            students: [
+                { id: 's1', name: 'Karim', surname: 'Alaoui', phone: '0600000001', schoolLevel: 'Terminale' },
+                { id: 's2', name: 'Salma', surname: 'Benali', phone: '0600000002', schoolLevel: 'Terminale' },
+                { id: 's3', name: 'Yassine', surname: 'Hajji', phone: '0600000003', schoolLevel: 'Terminale' },
+                { id: 's4', name: 'Nour', surname: 'Rachidi', phone: '0600000004', schoolLevel: 'Terminale' },
+            ],
+        },
+        {
+            id: 'grp-2',
+            name: 'Groupe Physique 1ère Bac',
+            type: 'regular',
+            subject: 'Physique-Chimie',
+            level: '1ère Bac',
+            room: 'Salle 1',
+            whatsappUrl: 'https://chat.whatsapp.com/example2',
+            timeSlots: [
+                { day: 'Mardi', startTime: '10:00', endTime: '12:00' },
+            ],
+            _count: { students: 3 },
+            students: [
+                { id: 's5', name: 'Amine', surname: 'Tazi', phone: '0600000005', schoolLevel: '1ère Bac' },
+                { id: 's6', name: 'Hajar', surname: 'Moussaoui', phone: '0600000006', schoolLevel: '1ère Bac' },
+                { id: 's7', name: 'Omar', surname: 'Filali', phone: '0600000007', schoolLevel: '1ère Bac' },
+            ],
+        },
+    ],
+};
+
+const MOCK_COURS: CoursItem[] = [
+    {
+        id: 'c1',
+        type: 'cours',
+        groupId: 'grp-1',
+        title: 'الفصل 3 - الدوال الخطية',
+        objectif: 'فهم الدوال الخطية ورسم تمثيلها البياني',
+        plan: '1. مراجعة الدرس السابق (10 دقائق)\n2. شرح مفهوم الدالة الخطية (20 دقيقة)\n3. تمارين تطبيقية (25 دقيقة)\n4. تصحيح وتلخيص (5 دقائق)',
+        description: 'تعريف الدالة الخطية f(x)=ax، دراسة الإشارة، تمثيل بياني.',
+        date: '2026-03-10',
+        duration: 'ساعتان',
+        note: 'إحضار الآلة الحاسبة',
+    },
+    {
+        id: 'c2',
+        type: 'examen',
+        groupId: 'grp-1',
+        title: 'فرض محروس رقم 1',
+        objectif: 'تقييم الفصلين 1 و 2',
+        plan: '',
+        description: 'الفصل 1: المتتاليات — الفصل 2: الحساب المثلثي',
+        date: '2026-03-17',
+        duration: '2 ساعة',
+        note: '',
+    },
+    {
+        id: 'c3',
+        type: 'cours',
+        groupId: 'grp-2',
+        title: 'الكهرباء - قانون أوم',
+        objectif: 'تطبيق قانون أوم في الدوائر الكهربائية البسيطة',
+        plan: '1. تذكير بالمفاهيم الأساسية (15 دقيقة)\n2. شرح قانون أوم (20 دقيقة)\n3. تمارين (20 دقيقة)',
+        description: 'U = RI، تطبيقات عملية، قياسات.',
+        date: '2026-03-11',
+        duration: 'ساعتان',
+        note: '',
+    },
+];
+
+const MOCK_NOTIFICATIONS = [
+    { id: 'n1', text: '📢 اجتماع الأساتذة يوم الجمعة 13 مارس الساعة 10:00 في قاعة الاجتماعات.', date: '05/03/2026', read: false },
+    { id: 'n2', text: '✅ تم تسجيل نتائج الفرض المحروس بنجاح. شكراً لك!', date: '04/03/2026', read: true },
+];
+
 // ─── Main Component ─────────────────────────────────────────────────
 export default function TeacherDashboardPage() {
     const router = useRouter();
     const { teacher: storeTeacher, teacherToken, loading: storeLoading, getMe, logout } = useTeacherAuthStore();
+
+    // Hoist CoursItem type for mock data usage above — type is now at module level
 
     const [teacher, setTeacher] = useState<TeacherDetail | null>(null);
     const [loading, setLoading] = useState(true);
@@ -85,19 +194,6 @@ export default function TeacherDashboardPage() {
     const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
     // Cours & Examens
-    type CoursType = 'cours' | 'examen';
-    interface CoursItem {
-        id: string;
-        type: CoursType;
-        groupId: string;
-        title: string;
-        objectif: string;
-        plan: string;
-        description: string;
-        date: string;
-        duration: string;
-        note: string;
-    }
     const [coursList, setCoursList] = useState<CoursItem[]>([]);
     const [coursForm, setCoursForm] = useState<Partial<CoursItem> & { type: CoursType }>({ type: 'cours', groupId: '', title: '', objectif: '', plan: '', description: '', date: new Date().toISOString().split('T')[0], duration: '', note: '' });
     const [editingCoursId, setEditingCoursId] = useState<string | null>(null);
@@ -139,6 +235,13 @@ export default function TeacherDashboardPage() {
 
     // Auth guard + load full profile
     useEffect(() => {
+        if (MOCK_MODE) {
+            setTeacher(MOCK_TEACHER);
+            setCoursList(MOCK_COURS as CoursItem[]);
+            setNotifications(MOCK_NOTIFICATIONS);
+            setLoading(false);
+            return;
+        }
         if (!teacherToken) { router.replace('/login'); return; }
         setLoading(true);
         getMe().finally(() => setLoading(false));
@@ -146,6 +249,7 @@ export default function TeacherDashboardPage() {
 
     // Sync enriched store data
     useEffect(() => {
+        if (MOCK_MODE) return; // mock data already set above
         if (storeTeacher) {
             setTeacher(storeTeacher as unknown as TeacherDetail);
             const stored = localStorage.getItem(`teacher_notifications_${storeTeacher.id}`);
@@ -222,7 +326,7 @@ export default function TeacherDashboardPage() {
         setExpandedGroups(prev => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s; });
     };
 
-    if (loading || storeLoading || !teacher) {
+    if (loading || (!MOCK_MODE && storeLoading) || !teacher) {
         return (
             <div className="h-screen flex items-center justify-center bg-slate-50">
                 <div className="flex flex-col items-center gap-4">
@@ -688,82 +792,82 @@ export default function TeacherDashboardPage() {
                             {showCoursForm && (
                                 <div className="p-5 border-b border-amber-100 bg-amber-50/40">
                                     <div className="flex items-center justify-between mb-4">
-                                        <p className="font-bold text-gray-700 text-sm">{editingCoursId ? 'Modifier' : 'Nouveau cours / examen'}</p>
+                                        <p className="font-bold text-gray-700 text-sm" dir="rtl">{editingCoursId ? 'تعديل الدرس' : 'إضافة درس / امتحان'}</p>
                                         <button onClick={() => setShowCoursForm(false)} className="text-gray-400 hover:text-gray-600"><X size={16} /></button>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                                         {/* Type */}
                                         <div>
-                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Type</label>
+                                            <label className="text-xs font-bold text-gray-500 block mb-1.5" dir="rtl">النوع</label>
                                             <div className="flex gap-2">
                                                 {(['cours', 'examen'] as const).map(t => (
                                                     <button key={t} onClick={() => setCoursForm(f => ({ ...f, type: t }))}
                                                         className={`flex-1 py-2 rounded-lg text-xs font-bold border transition-all ${coursForm.type === t ? (t === 'examen' ? 'bg-red-500 text-white border-red-500' : 'bg-blue-500 text-white border-blue-500') : 'bg-white text-gray-400 border-gray-200 hover:border-amber-300'}`}>
-                                                        {t === 'cours' ? <span className="flex items-center justify-center gap-1"><FileText size={12} /> Cours</span> : <span className="flex items-center justify-center gap-1"><FlaskConical size={12} /> Examen</span>}
+                                                        {t === 'cours' ? <span className="flex items-center justify-center gap-1"><FileText size={12} /> درس</span> : <span className="flex items-center justify-center gap-1"><FlaskConical size={12} /> امتحان</span>}
                                                     </button>
                                                 ))}
                                             </div>
                                         </div>
                                         {/* Groupe */}
                                         <div>
-                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Groupe</label>
+                                            <label className="text-xs font-bold text-gray-500 block mb-1.5" dir="rtl">المجموعة</label>
                                             <select value={coursForm.groupId} onChange={e => setCoursForm(f => ({ ...f, groupId: e.target.value }))}
-                                                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-300/30 focus:border-amber-400 outline-none bg-white">
-                                                <option value="">— Choisir un groupe —</option>
+                                                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-300/30 focus:border-amber-400 outline-none bg-white" dir="rtl">
+                                                <option value="">— اختر المجموعة —</option>
                                                 {groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
                                             </select>
                                         </div>
                                         {/* Titre */}
                                         <div>
-                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Titre *</label>
+                                            <label className="text-xs font-bold text-gray-500 block mb-1.5" dir="rtl">عنوان الدرس *</label>
                                             <input value={coursForm.title || ''} onChange={e => setCoursForm(f => ({ ...f, title: e.target.value }))}
-                                                placeholder="Ex: Chapitre 3 - Fonctions" className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-300/30 focus:border-amber-400 outline-none" />
+                                                placeholder="مثال: الفصل 3 - الدوال" dir="rtl" className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-300/30 focus:border-amber-400 outline-none" />
                                         </div>
                                         {/* Date */}
                                         <div>
-                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Date *</label>
+                                            <label className="text-xs font-bold text-gray-500 block mb-1.5" dir="rtl">تاريخ الحصة *</label>
                                             <input type="date" value={coursForm.date || ''} onChange={e => setCoursForm(f => ({ ...f, date: e.target.value }))}
                                                 className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-300/30 focus:border-amber-400 outline-none" />
                                         </div>
                                         {/* Durée */}
                                         <div>
-                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Durée</label>
+                                            <label className="text-xs font-bold text-gray-500 block mb-1.5" dir="rtl">المدة</label>
                                             <input value={coursForm.duration || ''} onChange={e => setCoursForm(f => ({ ...f, duration: e.target.value }))}
-                                                placeholder="Ex: 2h" className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-300/30 focus:border-amber-400 outline-none" />
+                                                placeholder="مثال: ساعتان" dir="rtl" className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-300/30 focus:border-amber-400 outline-none" />
                                         </div>
                                         {/* Objectif */}
                                         <div className="sm:col-span-2 xl:col-span-3">
-                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">🎯 Objectif de la séance *</label>
+                                            <label className="text-xs font-bold text-gray-500 block mb-1.5" dir="rtl">🎯 هدف الحصة *</label>
                                             <input value={coursForm.objectif || ''} onChange={e => setCoursForm(f => ({ ...f, objectif: e.target.value }))}
-                                                placeholder="Ex: Comprendre les fonctions linéaires et savoir tracer leur représentation graphique"
+                                                placeholder="مثال: فهم الدوال الخطية وتمثيلها البياني" dir="rtl"
                                                 className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-300/30 focus:border-amber-400 outline-none" />
                                         </div>
                                         {/* Plan */}
                                         <div className="sm:col-span-2 xl:col-span-3">
-                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">📋 Plan de la séance</label>
+                                            <label className="text-xs font-bold text-gray-500 block mb-1.5" dir="rtl">📋 خطة الحصة</label>
                                             <textarea value={coursForm.plan || ''} onChange={e => setCoursForm(f => ({ ...f, plan: e.target.value }))}
-                                                rows={3} placeholder={`Ex:\n1. Rappel du cours précédent (10 min)\n2. Introduction des nouvelles notions (20 min)\n3. Exercices d'application (25 min)\n4. Correction et synthèse (5 min)`}
+                                                rows={3} dir="rtl" placeholder={`مثال:\n1. مراجعة الدرس السابق (10 دقائق)\n2. شرح المفاهيم الجديدة (20 دقيقة)\n3. تمارين تطبيقية (25 دقيقة)\n4. تصحيح وتلخيص (5 دقائق)`}
                                                 className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-300/30 focus:border-amber-400 outline-none resize-none" />
                                         </div>
                                         {/* Description */}
                                         <div className="sm:col-span-2 xl:col-span-3">
-                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">📝 Contenu détaillé</label>
+                                            <label className="text-xs font-bold text-gray-500 block mb-1.5" dir="rtl">📝 محتوى الحصة</label>
                                             <textarea value={coursForm.description || ''} onChange={e => setCoursForm(f => ({ ...f, description: e.target.value }))}
-                                                rows={2} placeholder="Décrivez le contenu du cours ou de l'examen..."
+                                                rows={2} dir="rtl" placeholder="صف محتوى الدرس أو الامتحان..."
                                                 className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-300/30 focus:border-amber-400 outline-none resize-none" />
                                         </div>
                                         {/* Note */}
                                         <div className="sm:col-span-2 xl:col-span-3">
-                                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Note interne</label>
+                                            <label className="text-xs font-bold text-gray-500 block mb-1.5" dir="rtl">ملاحظة داخلية</label>
                                             <input value={coursForm.note || ''} onChange={e => setCoursForm(f => ({ ...f, note: e.target.value }))}
-                                                placeholder="Notes supplémentaires..." className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-300/30 focus:border-amber-400 outline-none" />
+                                                placeholder="ملاحظات إضافية..." dir="rtl" className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-300/30 focus:border-amber-400 outline-none" />
                                         </div>
                                     </div>
                                     <div className="mt-4 flex justify-end gap-3">
-                                        <button onClick={() => setShowCoursForm(false)} className="px-4 py-2 rounded-xl text-sm font-semibold text-gray-500 bg-gray-100 hover:bg-gray-200 transition-all">Annuler</button>
+                                        <button onClick={() => setShowCoursForm(false)} className="px-4 py-2 rounded-xl text-sm font-semibold text-gray-500 bg-gray-100 hover:bg-gray-200 transition-all">إلغاء</button>
                                         <button onClick={submitCoursForm} disabled={!coursForm.title || !coursForm.date || !coursForm.groupId || !coursForm.objectif}
                                             className="flex items-center gap-2 px-5 py-2 bg-amber-400 hover:bg-amber-500 text-black font-bold text-sm rounded-xl transition-all disabled:opacity-50">
-                                            <Save size={14} /> {editingCoursId ? 'Enregistrer les modifications' : 'Ajouter'}
+                                            <Save size={14} /> {editingCoursId ? 'حفظ التعديلات' : 'إضافة'}
                                         </button>
                                     </div>
                                 </div>
@@ -773,8 +877,8 @@ export default function TeacherDashboardPage() {
                             {coursList.length === 0 && !showCoursForm ? (
                                 <div className="p-12 text-center">
                                     <ClipboardList size={40} className="mx-auto text-gray-200 mb-3" />
-                                    <p className="text-gray-400 font-medium text-sm">Aucun cours ou examen enregistré</p>
-                                    <p className="text-xs text-gray-300 mt-1">Cliquez sur « Ajouter » pour commencer</p>
+                                    <p className="text-gray-400 font-medium text-sm" dir="rtl">لا توجد دروس أو امتحانات مسجلة</p>
+                                    <p className="text-xs text-gray-300 mt-1" dir="rtl">انقر على « إضافة » للبدء</p>
                                 </div>
                             ) : (
                                 <div className="divide-y divide-gray-50">
@@ -789,7 +893,7 @@ export default function TeacherDashboardPage() {
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center gap-2 flex-wrap">
                                                         <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${isExam ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`}>
-                                                            {isExam ? 'Examen' : 'Cours'}
+                                                            {isExam ? 'امتحان' : 'درس'}
                                                         </span>
                                                         <p className="font-bold text-gray-800 text-sm">{item.title}</p>
                                                     </div>
@@ -817,7 +921,7 @@ export default function TeacherDashboardPage() {
                                                         {/* WhatsApp share icon button */}
                                                         <button
                                                             onClick={() => setSharingCoursId(sharingCoursId === item.id ? null : item.id)}
-                                                            title="Partager sur WhatsApp"
+                                                            title="مشاركة على واتساب"
                                                             className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all shadow-sm ${
                                                                 sharingCoursId === item.id
                                                                     ? 'bg-green-500 text-white scale-110 shadow-green-200'
@@ -851,8 +955,8 @@ export default function TeacherDashboardPage() {
                         {notifications.length === 0 ? (
                             <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
                                 <BellRing size={40} className="mx-auto text-gray-300 mb-3" />
-                                <p className="text-gray-500 font-medium">Aucune notification reçue</p>
-                                <p className="text-xs text-gray-400 mt-1">Les messages de l'administration apparaîtront ici</p>
+                                <p className="text-gray-500 font-medium" dir="rtl">لا توجد إشعارات</p>
+                                <p className="text-xs text-gray-400 mt-1" dir="rtl">ستظهر رسائل الإدارة هنا</p>
                             </div>
                         ) : notifications.map(n => (
                             <div key={n.id} className={`bg-white rounded-2xl border p-5 transition-all ${n.read ? 'border-gray-100 opacity-70' : 'border-amber-200 shadow-sm shadow-amber-100'}`}>
@@ -868,7 +972,7 @@ export default function TeacherDashboardPage() {
                                     </div>
                                     {!n.read && (
                                         <button onClick={() => markRead(n.id)} className="text-xs font-semibold text-amber-600 hover:underline flex-shrink-0">
-                                            Marquer lu
+                                            تمييز كمقروء
                                         </button>
                                     )}
                                 </div>
@@ -905,8 +1009,8 @@ export default function TeacherDashboardPage() {
                                             </svg>
                                         </div>
                                         <div>
-                                            <p className="text-white font-bold text-sm">Partager sur WhatsApp</p>
-                                            <p className="text-white/70 text-xs">{isExam ? '📝 Examen' : '📚 Cours'} — {item.title}</p>
+                                            <p className="text-white font-bold text-sm">مشاركة على واتساب</p>
+                                                    <p className="text-white/70 text-xs">{isExam ? '📝 امتحان' : '📚 درس'} — {item.title}</p>
                                         </div>
                                     </div>
                                     <button onClick={() => setSharingCoursId(null)} className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition-colors">
@@ -918,7 +1022,7 @@ export default function TeacherDashboardPage() {
                                 <div className="p-5 space-y-4">
                                     {/* Message preview */}
                                     <div>
-                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Aperçu du message</p>
+                                        <p className="text-xs font-bold text-gray-400 mb-2" dir="rtl">معاينة الرسالة</p>
                                         <pre className="text-sm text-gray-700 bg-gray-50 rounded-2xl px-4 py-3 whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto border border-gray-100 font-sans">{msg}</pre>
                                     </div>
 
@@ -929,8 +1033,8 @@ export default function TeacherDashboardPage() {
                                             className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-2xl text-sm font-bold border-2 border-gray-200 hover:border-gray-300 bg-white text-gray-700 transition-all"
                                         >
                                             {copiedCoursId === item.id
-                                                ? <><Check size={16} className="text-green-500" /> Copié !</>
-                                                : <><Copy size={16} /> Copier</>
+                                                ? <><Check size={16} className="text-green-500" /> تم النسخ !</>
+                                                : <><Copy size={16} /> نسخ</>
                                             }
                                         </button>
                                         <a
@@ -939,7 +1043,7 @@ export default function TeacherDashboardPage() {
                                             rel="noopener noreferrer"
                                             className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-2xl text-sm font-bold bg-green-500 hover:bg-green-600 text-white transition-all shadow-md shadow-green-200"
                                         >
-                                            <Share2 size={16} /> Partager
+                                            <Share2 size={16} /> مشاركة
                                         </a>
                                     </div>
 
@@ -952,13 +1056,13 @@ export default function TeacherDashboardPage() {
                                             className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl text-sm font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-2 border-emerald-200 transition-all"
                                         >
                                             <ExternalLink size={16} />
-                                            Ouvrir le groupe : <span className="font-black">{grp.name}</span>
+                                            فتح المجموعة : <span className="font-black">{grp.name}</span>
                                         </a>
                                     )}
 
                                     {grp?.whatsappUrl && (
                                         <p className="text-center text-xs text-gray-400">
-                                            💡 Copiez le message → ouvrez le groupe → collez et envoyez
+                                            💡 انسخ الرسالة ← افتح المجموعة ← الصق وأرسل
                                         </p>
                                     )}
                                 </div>
